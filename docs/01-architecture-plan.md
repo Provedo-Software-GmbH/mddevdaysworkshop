@@ -1,0 +1,351 @@
+# Architecture Plan
+
+## High-Level Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Azure Container Apps                   │
+│                                                           │
+│  ┌──────────────┐         ┌──────────────────────────┐   │
+│  │   Frontend    │         │        Backend API        │   │
+│  │  (nginx/SPA)  │────────▶│   .NET 10 Minimal APIs   │   │
+│  │  React + TS   │         │                          │   │
+│  └──────────────┘         └──────────┬───────────────┘   │
+│                                       │                   │
+└───────────────────────────────────────┼───────────────────┘
+                                        │
+                    ┌───────────────────┼───────────────────┐
+                    │                   │                   │
+              ┌─────▼─────┐     ┌──────▼──────┐    ┌──────▼──────┐
+              │  Cosmos DB │     │   Stripe    │    │  Entra ID   │
+              │ (Serverless)│     │  (Payments) │    │ (Auth)      │
+              └───────────┘     └─────────────┘    └─────────────┘
+                                                          │
+                    ┌─────────────────────────────────────┘
+                    │
+              ┌─────▼──────────┐     ┌──────────────────┐
+              │ Entra External │     │ App Insights +    │
+              │  Identities    │     │ Log Analytics     │
+              └────────────────┘     └──────────────────┘
+```
+
+## Backend Architecture (.NET 10)
+
+### Project Structure
+
+```
+src/
+├── DevConfTicketing.Api/           # Minimal API Host
+│   ├── Program.cs                  # Service registration, middleware
+│   ├── Endpoints/                  # Endpoint definitions (grouped by feature)
+│   │   ├── EventEndpoints.cs
+│   │   ├── TicketTypeEndpoints.cs
+│   │   ├── TaxRateEndpoints.cs
+│   │   ├── OrderEndpoints.cs       # 🔨 Attendee extends
+│   │   ├── PaymentEndpoints.cs     # 🔨 Attendee 1
+│   │   ├── InvoiceEndpoints.cs     # 🔨 Attendee 2
+│   │   ├── AuthEndpoints.cs        # 🔨 Attendee 3
+│   │   ├── NotificationEndpoints.cs# 🔨 Attendee 4
+│   │   ├── SessionEndpoints.cs     # 🔨 Attendee 5
+│   │   └── DashboardEndpoints.cs   # 🔨 Attendee 6
+│   ├── Middleware/
+│   │   ├── ExceptionHandlingMiddleware.cs
+│   │   └── CorrelationIdMiddleware.cs
+│   ├── appsettings.json
+│   ├── appsettings.Development.json
+│   └── Dockerfile
+│
+├── DevConfTicketing.Domain/        # Domain Models (pure, no dependencies)
+│   ├── Events/
+│   │   ├── Event.cs
+│   │   ├── EventStatus.cs
+│   │   └── EventSummary.cs
+│   ├── Tickets/
+│   │   ├── TicketType.cs
+│   │   ├── LineItemTemplate.cs     # Template for line items on a ticket type
+│   │   └── TaxRate.cs
+│   ├── Orders/
+│   │   ├── Order.cs
+│   │   ├── OrderLineItem.cs
+│   │   ├── OrderStatus.cs
+│   │   └── PaymentInfo.cs          # 🔨 Attendee 1
+│   ├── Invoices/                   # 🔨 Attendee 2
+│   │   ├── Invoice.cs
+│   │   └── InvoiceLineItem.cs
+│   ├── Customers/                  # 🔨 Attendee 3
+│   │   ├── Customer.cs
+│   │   └── CustomerType.cs
+│   ├── Sessions/                   # 🔨 Attendee 5
+│   │   ├── Session.cs
+│   │   └── Speaker.cs
+│   └── Metrics/                    # 🔨 Attendee 6
+│       └── SalesMetric.cs
+│
+├── DevConfTicketing.Infrastructure/ # Data access, external services
+│   ├── Cosmos/
+│   │   ├── CosmosDbService.cs      # Generic Cosmos operations
+│   │   ├── CosmosContainerConfig.cs
+│   │   └── Repositories/
+│   │       ├── EventRepository.cs
+│   │       ├── TicketTypeRepository.cs
+│   │       ├── TaxRateRepository.cs
+│   │       ├── OrderRepository.cs
+│   │       ├── CustomerRepository.cs    # 🔨 Attendee 3
+│   │       └── SessionRepository.cs     # 🔨 Attendee 5
+│   ├── Stripe/                     # 🔨 Attendee 1
+│   │   ├── StripePaymentService.cs
+│   │   └── StripeWebhookHandler.cs
+│   ├── Email/                      # 🔨 Attendee 4
+│   │   ├── EmailService.cs
+│   │   └── EmailTemplates/
+│   ├── Identity/                   # 🔨 Attendee 3
+│   │   └── EntraExternalIdService.cs
+│   └── Monitoring/
+│       └── TelemetryService.cs
+│
+├── DevConfTicketing.Application/   # Business logic / Use cases
+│   ├── Events/
+│   │   ├── CreateEventHandler.cs
+│   │   ├── UpdateEventHandler.cs
+│   │   └── GetEventsHandler.cs
+│   ├── Tickets/
+│   │   ├── CreateTicketTypeHandler.cs
+│   │   └── TaxCalculationService.cs  # 🔨 Attendee 2 extends
+│   ├── Orders/
+│   │   ├── CreateOrderHandler.cs
+│   │   └── OrderService.cs
+│   ├── Invoices/                   # 🔨 Attendee 2
+│   │   └── InvoiceGenerationService.cs
+│   ├── Payments/                   # 🔨 Attendee 1
+│   │   └── PaymentService.cs
+│   ├── Notifications/              # 🔨 Attendee 4
+│   │   └── NotificationService.cs
+│   ├── Sessions/                   # 🔨 Attendee 5
+│   │   └── SessionService.cs
+│   └── Dashboard/                  # 🔨 Attendee 6
+│       └── MetricsService.cs
+│
+└── DevConfTicketing.Tests/         # Unit tests
+    ├── Events/
+    ├── Tickets/
+    └── Orders/
+```
+
+### Key Design Decisions
+
+1. **No EF Core with Cosmos** — Direct Cosmos DB SDK v3 usage with a generic repository pattern
+2. **Minimal APIs** — Organized in endpoint classes using `MapGroup()` and extension methods
+3. **Vertical Slice-adjacent** — Domain/Application/Infrastructure layers but features are cohesive
+4. **Records for DTOs** — Request/Response models as records
+5. **Domain models as classes** — Rich domain models with behavior
+
+### Cosmos DB Container Design
+
+| Container          | Partition Key      | Description                          |
+| ------------------ | ------------------ | ------------------------------------ |
+| `events`           | `/id`              | Event documents                      |
+| `ticket-types`     | `/eventId`         | Ticket types per event               |
+| `tax-rates`        | `/countryCode`     | Tax rate definitions                 |
+| `orders`           | `/eventId`         | Orders (partitioned by event)        |
+| `customers`        | `/id`              | Customer profiles                    |
+| `sessions`         | `/eventId`         | Sessions/talks per event             |
+| `invoices`         | `/orderId`         | Invoices per order                   |
+
+### API Design
+
+All APIs follow REST conventions with `/api/v1/` prefix:
+
+```
+# Events (pre-built)
+GET    /api/v1/events
+GET    /api/v1/events/{id}
+POST   /api/v1/events
+PUT    /api/v1/events/{id}
+DELETE /api/v1/events/{id}
+PATCH  /api/v1/events/{id}/publish
+PATCH  /api/v1/events/{id}/archive
+
+# Ticket Types (pre-built)
+GET    /api/v1/events/{eventId}/ticket-types
+POST   /api/v1/events/{eventId}/ticket-types
+PUT    /api/v1/events/{eventId}/ticket-types/{id}
+DELETE /api/v1/events/{eventId}/ticket-types/{id}
+
+# Tax Rates (pre-built)
+GET    /api/v1/tax-rates
+POST   /api/v1/tax-rates
+PUT    /api/v1/tax-rates/{id}
+
+# Orders (pre-built skeleton, attendees extend)
+POST   /api/v1/events/{eventId}/orders
+GET    /api/v1/events/{eventId}/orders
+GET    /api/v1/orders/{id}
+
+# Payments — 🔨 Attendee 1
+POST   /api/v1/orders/{id}/checkout
+POST   /api/v1/webhooks/stripe
+GET    /api/v1/orders/{id}/payment-status
+
+# Invoices — 🔨 Attendee 2
+GET    /api/v1/orders/{id}/invoice
+POST   /api/v1/orders/{id}/invoice/generate
+GET    /api/v1/orders/{id}/invoice/pdf
+
+# Auth / Customers — 🔨 Attendee 3
+POST   /api/v1/auth/guest-checkout
+POST   /api/v1/auth/register
+GET    /api/v1/customers/me
+GET    /api/v1/customers/me/orders
+
+# Notifications — 🔨 Attendee 4
+POST   /api/v1/orders/{id}/send-confirmation
+POST   /api/v1/events/{id}/send-reminder
+GET    /api/v1/notifications/templates
+
+# Sessions & Speakers — 🔨 Attendee 5
+GET    /api/v1/events/{eventId}/sessions
+POST   /api/v1/events/{eventId}/sessions
+PUT    /api/v1/events/{eventId}/sessions/{id}
+GET    /api/v1/events/{eventId}/speakers
+POST   /api/v1/events/{eventId}/speakers
+
+# Dashboard & KPIs — 🔨 Attendee 6
+GET    /api/v1/dashboard/events/{eventId}/sales
+GET    /api/v1/dashboard/events/{eventId}/revenue
+GET    /api/v1/dashboard/overview
+```
+
+## Frontend Architecture
+
+### Project Structure
+
+```
+frontend/
+├── index.html
+├── package.json
+├── bun.lock
+├── vite.config.ts
+├── tsconfig.json
+├── tailwind.config.ts
+├── components.json              # shadcn/ui config
+├── Dockerfile
+├── nginx.conf
+├── public/
+├── src/
+│   ├── main.tsx
+│   ├── App.tsx
+│   ├── routes/                  # File-based or manual routing
+│   │   ├── index.tsx            # Public event listing
+│   │   ├── events/
+│   │   │   ├── [id].tsx         # Public event detail
+│   │   │   └── [id]/
+│   │   │       ├── tickets.tsx  # Ticket selection → checkout
+│   │   │       └── sessions.tsx # 🔨 Attendee 5
+│   │   ├── checkout/
+│   │   │   ├── index.tsx        # 🔨 Attendee 1 (Stripe)
+│   │   │   ├── success.tsx      # 🔨 Attendee 1
+│   │   │   └── cancel.tsx       # 🔨 Attendee 1
+│   │   ├── account/             # 🔨 Attendee 3
+│   │   │   ├── login.tsx
+│   │   │   ├── register.tsx
+│   │   │   └── orders.tsx
+│   │   └── admin/
+│   │       ├── index.tsx        # Admin overview
+│   │       ├── events/
+│   │       │   ├── index.tsx    # Event list (pre-built)
+│   │       │   ├── new.tsx      # Create event (pre-built)
+│   │       │   └── [id]/
+│   │       │       ├── edit.tsx         # Edit event (pre-built)
+│   │       │       ├── ticket-types.tsx # Manage ticket types (pre-built)
+│   │       │       ├── orders.tsx       # View orders (pre-built skeleton)
+│   │       │       └── sessions.tsx     # 🔨 Attendee 5
+│   │       ├── tax-rates.tsx    # Tax rate management (pre-built)
+│   │       ├── invoices/        # 🔨 Attendee 2
+│   │       ├── customers/       # 🔨 Attendee 3
+│   │       ├── notifications/   # 🔨 Attendee 4
+│   │       └── dashboard/       # 🔨 Attendee 6
+│   ├── components/
+│   │   ├── ui/                  # shadcn/ui components
+│   │   ├── layout/
+│   │   │   ├── PublicLayout.tsx
+│   │   │   ├── AdminLayout.tsx
+│   │   │   └── Navbar.tsx
+│   │   ├── events/
+│   │   │   ├── EventCard.tsx
+│   │   │   ├── EventForm.tsx
+│   │   │   └── EventDetail.tsx
+│   │   ├── tickets/
+│   │   │   ├── TicketTypeCard.tsx
+│   │   │   ├── TicketTypeForm.tsx
+│   │   │   └── TicketSelector.tsx
+│   │   └── shared/
+│   │       ├── DataTable.tsx
+│   │       ├── LoadingSpinner.tsx
+│   │       └── ErrorBoundary.tsx
+│   ├── hooks/
+│   │   ├── useEvents.ts
+│   │   ├── useTicketTypes.ts
+│   │   └── useApi.ts
+│   ├── lib/
+│   │   ├── api.ts               # API client (fetch wrapper)
+│   │   ├── auth.ts              # Auth utilities
+│   │   └── utils.ts             # shadcn/ui utilities
+│   └── types/
+│       ├── event.ts
+│       ├── ticket.ts
+│       ├── order.ts
+│       └── api.ts
+└── e2e/                         # 🔨 Playwright tests (e2e-testing-agent)
+    ├── playwright.config.ts
+    └── tests/
+```
+
+## Authentication Architecture
+
+### Admin Users (Internal)
+
+- **Microsoft Entra ID** with an App Registration
+- Backend validates JWT tokens from Entra ID
+- Admin endpoints protected via `[Authorize]` with role-based policies
+- Frontend uses MSAL.js for login flow
+
+### Customers (External)
+
+- **Microsoft Entra External Identities** (CIAM)
+- Guest checkout (no account required) — creates order with email only
+- Optional registration for order history
+- Frontend uses MSAL.js with external tenant configuration
+
+## Azure Infrastructure (Production)
+
+| Service                        | SKU / Tier              | Purpose                        |
+| ------------------------------ | ----------------------- | ------------------------------ |
+| Azure Container Apps           | Consumption (serverless)| Backend API + Frontend SPA     |
+| Azure Cosmos DB                | Serverless              | Database                       |
+| Azure Container Registry       | Basic                   | Docker images                  |
+| Azure Application Insights     | Pay-as-you-go           | APM, logging, traces           |
+| Azure Log Analytics Workspace  | Pay-as-you-go           | Centralized logs               |
+| Azure Key Vault                | Standard                | Secrets (Stripe keys etc.)     |
+| Entra ID                       | Included (Free tier)    | Admin auth                     |
+| Entra External Identities      | Pay-as-you-go (MAU)     | Customer auth                  |
+
+Estimated monthly cost (low traffic): **~€20-40/month**
+
+## CI/CD Pipeline
+
+```yaml
+# .github/workflows/ci.yml
+- Trigger: PR and push to main
+- Steps:
+  1. Build & test backend (.NET 10)
+  2. Build & lint frontend (Bun)
+  3. Run unit tests
+  4. Run Playwright e2e tests (on PR only if label present)
+
+# .github/workflows/deploy.yml (future, not part of workshop)
+- Trigger: Push to main
+- Steps:
+  1. Build Docker images
+  2. Push to ACR
+  3. Deploy to Azure Container Apps
+```
