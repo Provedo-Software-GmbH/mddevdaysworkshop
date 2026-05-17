@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="DevConfTicketing.Api/DevConfTicketing.Api.csproj" />
+  <Project Path="DevConfTicketing.Application/DevConfTicketing.Application.csproj" />
+  <Project Path="DevConfTicketing.Domain/DevConfTicketing.Domain.csproj" />
+  <Project Path="DevConfTicketing.Infrastructure/DevConfTicketing.Infrastructure.csproj" />
+  <Project Path="DevConfTicketing.Tests/DevConfTicketing.Tests.csproj" />
+</Solution>
