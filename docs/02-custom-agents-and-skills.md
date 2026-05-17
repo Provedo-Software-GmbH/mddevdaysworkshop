@@ -211,10 +211,10 @@ The `.github/copilot-setup-steps.yml` configures the environment for the Copilot
 
 ```yaml
 steps:
-  - name: Setup .NET 10
-    uses: actions/setup-dotnet@v4
+  - name: Setup .NET 11
+    uses: actions/setup-dotnet@v5
     with:
-      dotnet-version: '10.0.x'
+      dotnet-version: '11.0.x'
       dotnet-quality: 'preview'
 
   - name: Setup Bun

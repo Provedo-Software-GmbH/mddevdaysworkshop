@@ -34,7 +34,7 @@ Eine Event-Management-Plattform zum Erstellen von Entwicklerkonferenzen und zum 
 
 | Layer       | Technologie                                |
 | ----------- | ------------------------------------------ |
-| Backend     | .NET 10, Minimal APIs, Cosmos DB SDK       |
+| Backend     | .NET 11, Minimal APIs, Cosmos DB SDK       |
 | Frontend    | React 19, TypeScript, Vite, shadcn/ui, Bun |
 | Auth (Admin)| Microsoft Entra ID (App Registration)      |
 | Auth (Customer) | Microsoft Entra External Identities    |
