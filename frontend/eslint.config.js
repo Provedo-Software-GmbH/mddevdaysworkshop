@@ -32,4 +32,11 @@ export default defineConfig([
       'react-refresh/only-export-components': 'off',
     },
   },
+  {
+    // lib/ modules legitimately co-export providers, hooks, helpers, and legacy functions
+    files: ['src/lib/**/*.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 ])

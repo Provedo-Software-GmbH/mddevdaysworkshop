@@ -5,13 +5,13 @@ import {
   LayoutDashboard,
   Receipt,
   Settings,
-  Ticket,
   Tags,
+  Ticket,
 } from "lucide-react";
 import { trackPageView } from "@/lib/telemetry";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { getCurrentUser } from "@/lib/auth";
+import { useAuth } from "@/lib/auth";
 
 const sidebarItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -23,7 +23,7 @@ const sidebarItems = [
 
 export default function AdminLayout() {
   const location = useLocation();
-  const user = getCurrentUser();
+  const { user } = useAuth();
 
   useEffect(() => {
     trackPageView("admin", location.pathname);

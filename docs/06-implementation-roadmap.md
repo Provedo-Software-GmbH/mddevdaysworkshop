@@ -60,13 +60,13 @@ All models annotated with `[Description]` and `[JsonPropertyName]` attributes.
 ### Step 6: Frontend — Base Setup ✅
 - [x] React Router configuration
 - [x] TanStack Query provider
-- [x] API client (`lib/api.ts`) *(implemented in Step 5)*
-- [x] Auth stub (`lib/auth.ts`) *(implemented in Step 5)*
-- [x] OpenTelemetry telemetry service (`lib/telemetry.ts`) — distributed tracing, fetch auto-instrumentation with `traceparent` header propagation (W3C Trace Context), document load spans, custom span helpers. Uses OTLP/HTTP (not gRPC) — browser-compatible. Traces exported via backend proxy (`POST /api/v1/telemetry`) to avoid exposing auth keys in the browser. *(implemented in Step 5)*
-- [x] Telemetry initialization in `main.tsx` *(implemented in Step 5)*
-- [x] End-to-end distributed tracing verified: frontend `traceparent` → backend continues trace → Cosmos DB spans in same trace *(wired in Step 5; runtime verification requires deployed infrastructure)*
+- [x] API client (`lib/api.ts`) — generic fetch wrapper with auth-token injection for admin routes
+- [x] Auth stub (`lib/auth.tsx`) — `AuthProvider`, `useAuth()` hook, `ProtectedRoute` component (stub for MSAL drop-in replacement)
+- [x] OpenTelemetry telemetry service (`lib/telemetry.ts`) — distributed tracing, fetch auto-instrumentation with `traceparent` header propagation (W3C Trace Context), document load spans, custom span helpers. Uses OTLP/HTTP (not gRPC) — browser-compatible. Traces exported via backend proxy (`POST /api/v1/telemetry`) to avoid exposing auth keys in the browser.
+- [x] Telemetry initialization in `main.tsx`
+- [x] End-to-end distributed tracing wired: frontend `traceparent` → backend continues trace → Cosmos DB spans in same trace (runtime verification requires deployed infrastructure)
 - [x] Public layout (header, footer, nav)
-- [x] Admin layout (sidebar, content area)
+- [x] Admin layout (sidebar, content area) with `useAuth()` integration
 - [x] shadcn/ui components installed
 
 ### Step 7: Frontend — Public Pages

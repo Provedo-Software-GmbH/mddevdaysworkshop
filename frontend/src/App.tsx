@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider, ProtectedRoute } from "@/lib/auth";
 import PublicLayout from "@/layouts/PublicLayout";
 import AdminLayout from "@/layouts/AdminLayout";
 import HomePage from "@/pages/public/HomePage";
@@ -26,30 +27,39 @@ const queryClient = new QueryClient({
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <BrowserRouter>
-          <Routes>
-            {/* Public routes */}
-            <Route element={<PublicLayout />}>
-              <Route index element={<HomePage />} />
-              <Route path="events/:id" element={<EventDetailPage />} />
-              <Route path="events/:id/tickets" element={<TicketSelectionPage />} />
-            </Route>
+      <AuthProvider>
+        <TooltipProvider>
+          <BrowserRouter>
+            <Routes>
+              {/* Public routes */}
+              <Route element={<PublicLayout />}>
+                <Route index element={<HomePage />} />
+                <Route path="events/:id" element={<EventDetailPage />} />
+                <Route path="events/:id/tickets" element={<TicketSelectionPage />} />
+              </Route>
 
-            {/* Admin routes */}
-            <Route path="admin" element={<AdminLayout />}>
-              <Route index element={<AdminDashboardPage />} />
-              <Route path="events" element={<EventsPage />} />
-              <Route path="tax-rates" element={<TaxRatesPage />} />
-              <Route path="orders" element={<OrdersPage />} />
-            </Route>
+              {/* Admin routes — protected by auth */}
+              <Route
+                path="admin"
+                element={
+                  <ProtectedRoute>
+                    <AdminLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<AdminDashboardPage />} />
+                <Route path="events" element={<EventsPage />} />
+                <Route path="tax-rates" element={<TaxRatesPage />} />
+                <Route path="orders" element={<OrdersPage />} />
+              </Route>
 
-            {/* Catch-all */}
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </BrowserRouter>
-        <Toaster />
-      </TooltipProvider>
+              {/* Catch-all */}
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </BrowserRouter>
+          <Toaster />
+        </TooltipProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
