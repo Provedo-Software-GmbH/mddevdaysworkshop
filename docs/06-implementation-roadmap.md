@@ -46,6 +46,7 @@ This is what needs to be implemented **before** the workshop.
 - [ ] Health check
 - [ ] OpenAPI / Swagger
 - [ ] CORS configuration (must allow `traceparent` header for end-to-end distributed tracing with the frontend)
+- [ ] Frontend telemetry proxy endpoint (`POST /api/v1/telemetry`) — accepts OTLP/HTTP JSON traces from the browser and re-exports via the backend's OpenTelemetry pipeline (no auth keys in the browser)
 - [ ] Telemetry in middleware — request duration histogram, request counter with status code/endpoint tags, exception tracking in error-handling middleware
 
 ### Step 6: Frontend — Base Setup
@@ -53,7 +54,7 @@ This is what needs to be implemented **before** the workshop.
 - [ ] TanStack Query provider
 - [ ] API client (`lib/api.ts`)
 - [ ] Auth stub (`lib/auth.ts`)
-- [ ] OpenTelemetry telemetry service (`lib/telemetry.ts`) — distributed tracing, fetch auto-instrumentation with `traceparent` header propagation (W3C Trace Context), document load spans, custom span helpers
+- [ ] OpenTelemetry telemetry service (`lib/telemetry.ts`) — distributed tracing, fetch auto-instrumentation with `traceparent` header propagation (W3C Trace Context), document load spans, custom span helpers. Uses OTLP/HTTP (not gRPC) — browser-compatible. Traces exported via backend proxy (`POST /api/v1/telemetry`) to avoid exposing auth keys in the browser.
 - [ ] Telemetry initialization in `main.tsx`
 - [ ] End-to-end distributed tracing verified: frontend `traceparent` → backend continues trace → Cosmos DB spans in same trace
 - [ ] Public layout (header, footer, nav)

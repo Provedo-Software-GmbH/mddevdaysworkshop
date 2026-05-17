@@ -198,6 +198,7 @@ public enum DiscountType { Percentage, Absolute, FixedPrice }
 - `ActivitySource("DevConfTicketing")` for custom spans, `Meter("DevConfTicketing")` for custom metrics
 - Application Insights is a passive collector via the Azure Monitor OpenTelemetry exporter
 - Auto-instrumentation for ASP.NET Core requests and outgoing HTTP calls via OpenTelemetry
+- **Frontend telemetry proxy** — `POST /api/v1/telemetry` endpoint accepts OTLP/HTTP JSON trace payloads from the browser and re-exports them through the backend's OpenTelemetry pipeline (Azure Monitor via managed identity). This avoids exposing any instrumentation keys in client-side code.
 - **End-to-end distributed tracing**: The frontend injects `traceparent` headers (W3C Trace Context) into every API call; the backend automatically continues the same trace, creating a single correlated transaction from browser → API → Cosmos DB in Application Insights
 - Service metadata enrichment (service.name, service.version, service.namespace)
 - Custom metrics: `EventCreated`, `OrderCreated`, `TicketTypeSold`

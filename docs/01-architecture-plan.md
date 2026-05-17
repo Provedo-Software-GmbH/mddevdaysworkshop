@@ -200,6 +200,9 @@ POST   /api/v1/events/{eventId}/orders
 GET    /api/v1/events/{eventId}/orders
 GET    /api/v1/orders/{id}
 
+# Telemetry Proxy (pre-built — accepts frontend OTLP/HTTP JSON traces)
+POST   /api/v1/telemetry
+
 # Payments — 🔨 Attendee 1
 POST   /api/v1/orders/{id}/checkout
 POST   /api/v1/webhooks/stripe
