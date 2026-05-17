@@ -1,7 +1,10 @@
-// Auth stub — will be replaced with @azure/msal-react (Entra ID) for admin
-// and @azure/msal-browser (Entra External Identities) for customers.
-// Provides the proper API surface so all consumers can import from here now
-// and MSAL integration is a drop-in replacement later.
+// ---------------------------------------------------------------------------
+// Auth provider — wraps Microsoft Entra ID via MSAL for admin authentication.
+//
+// When MSAL is configured (VITE_AZURE_AD_CLIENT_ID set), this uses the real
+// @azure/msal-react provider. In development without Entra ID credentials,
+// it falls back to a mock user so the app remains functional.
+// ---------------------------------------------------------------------------
 
 import {
   createContext,
@@ -13,7 +16,23 @@ import {
   type PropsWithChildren,
 } from "react";
 import { Navigate, useLocation } from "react-router-dom";
+import {
+  PublicClientApplication,
+  InteractionRequiredAuthError,
+  type AccountInfo,
+} from "@azure/msal-browser";
+import {
+  MsalProvider,
+  useMsal,
+  useIsAuthenticated,
+} from "@azure/msal-react";
 import { setTokenAccessor } from "@/lib/api";
+import {
+  msalConfig,
+  loginRequest,
+  apiScopes,
+  isMsalConfigured,
+} from "@/lib/msalConfig";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -33,11 +52,11 @@ export interface AuthContextValue {
   isLoading: boolean;
   /** Whether the user is currently authenticated. */
   isAuthenticated: boolean;
-  /** Sign in (stub: immediately sets the mock user). */
+  /** Sign in via Entra ID (or mock in dev mode). */
   login: () => Promise<void>;
-  /** Sign out (stub: clears the mock user). */
+  /** Sign out. */
   logout: () => Promise<void>;
-  /** Retrieve an access token for API calls (stub: returns a mock token). */
+  /** Retrieve an access token for API calls. */
   getAccessToken: () => Promise<string | null>;
 }
 
@@ -48,45 +67,73 @@ export interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 // ---------------------------------------------------------------------------
-// Mock data (replaced by MSAL at integration time)
+// MSAL instance (singleton) — only created when configured
 // ---------------------------------------------------------------------------
 
-const MOCK_USER: AuthUser = {
-  id: "dev-user",
-  name: "Dev Admin",
-  email: "admin@devconf.local",
-  roles: ["admin"],
-};
+let msalInstance: PublicClientApplication | null = null;
 
-const MOCK_TOKEN = "dev-token";
+function getMsalInstance(): PublicClientApplication {
+  if (!msalInstance) {
+    msalInstance = new PublicClientApplication(msalConfig);
+  }
+  return msalInstance;
+}
 
 // ---------------------------------------------------------------------------
-// Provider
+// Helper: map MSAL AccountInfo to AuthUser
 // ---------------------------------------------------------------------------
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(MOCK_USER);
-  const [isLoading] = useState(false);
+function accountToUser(account: AccountInfo): AuthUser {
+  const roles =
+    (account.idTokenClaims?.["roles"] as string[] | undefined) ?? [];
+  return {
+    id: account.localAccountId,
+    name: account.name ?? "Unknown",
+    email: account.username ?? "",
+    roles,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Inner provider that uses MSAL hooks (must be inside MsalProvider)
+// ---------------------------------------------------------------------------
+
+function MsalAuthInner({ children }: { children: ReactNode }) {
+  const { instance, accounts, inProgress } = useMsal();
+  const isMsalAuthenticated = useIsAuthenticated();
+
+  const account = accounts[0] ?? null;
+  const user = account ? accountToUser(account) : null;
+  const isLoading = inProgress !== "none";
 
   const login = useCallback(async () => {
-    // Stub: immediately authenticate with the mock user.
-    // Replace with msalInstance.loginPopup() / loginRedirect().
-    setUser(MOCK_USER);
-  }, []);
+    await instance.loginPopup(loginRequest);
+  }, [instance]);
 
   const logout = useCallback(async () => {
-    // Stub: clear the user.
-    // Replace with msalInstance.logoutPopup() / logoutRedirect().
-    setUser(null);
-  }, []);
+    await instance.logoutPopup({ postLogoutRedirectUri: "/" });
+  }, [instance]);
 
   const getAccessToken = useCallback(async (): Promise<string | null> => {
-    // Stub: return a mock token when authenticated.
-    // Replace with msalInstance.acquireTokenSilent().
-    return user ? MOCK_TOKEN : null;
-  }, [user]);
+    if (!account) return null;
+    try {
+      const response = await instance.acquireTokenSilent({
+        scopes: apiScopes,
+        account,
+      });
+      return response.accessToken;
+    } catch (error) {
+      if (error instanceof InteractionRequiredAuthError) {
+        const response = await instance.acquireTokenPopup({
+          scopes: apiScopes,
+        });
+        return response.accessToken;
+      }
+      console.error("Failed to acquire token:", error);
+      return null;
+    }
+  }, [instance, account]);
 
-  // Wire token accessor into the API client so it can attach Bearer tokens.
   useEffect(() => {
     setTokenAccessor(getAccessToken);
   }, [getAccessToken]);
@@ -94,6 +141,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value: AuthContextValue = {
     user,
     isLoading,
+    isAuthenticated: isMsalAuthenticated,
+    login,
+    logout,
+    getAccessToken,
+  };
+
+  return <AuthContext value={value}>{children}</AuthContext>;
+}
+
+// ---------------------------------------------------------------------------
+// Mock data (used in development without Entra ID)
+// ---------------------------------------------------------------------------
+
+const MOCK_USER: AuthUser = {
+  id: "dev-user",
+  name: "Dev Admin",
+  email: "admin@devconf.local",
+  roles: ["Admin"],
+};
+
+const MOCK_TOKEN = "dev-token";
+
+// ---------------------------------------------------------------------------
+// Dev-mode provider (no real MSAL)
+// ---------------------------------------------------------------------------
+
+function DevAuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<AuthUser | null>(MOCK_USER);
+
+  const login = useCallback(async () => {
+    setUser(MOCK_USER);
+  }, []);
+
+  const logout = useCallback(async () => {
+    setUser(null);
+  }, []);
+
+  const getAccessToken = useCallback(
+    async (): Promise<string | null> => (user ? MOCK_TOKEN : null),
+    [user],
+  );
+
+  useEffect(() => {
+    setTokenAccessor(getAccessToken);
+  }, [getAccessToken]);
+
+  const value: AuthContextValue = {
+    user,
+    isLoading: false,
     isAuthenticated: user !== null,
     login,
     logout,
@@ -101,6 +197,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return <AuthContext value={value}>{children}</AuthContext>;
+}
+
+// ---------------------------------------------------------------------------
+// Public AuthProvider — delegates to MSAL or dev-mode
+// ---------------------------------------------------------------------------
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  if (!isMsalConfigured) {
+    return <DevAuthProvider>{children}</DevAuthProvider>;
+  }
+
+  const instance = getMsalInstance();
+  return (
+    <MsalProvider instance={instance}>
+      <MsalAuthInner>{children}</MsalAuthInner>
+    </MsalProvider>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -146,7 +259,7 @@ export function ProtectedRoute({ children }: PropsWithChildren) {
 // Legacy helpers (kept for backwards compatibility during migration)
 // ---------------------------------------------------------------------------
 
-/** @deprecated Use `useAuth().isAuthenticated` instead. Always returns `true` in the stub. */
+/** @deprecated Use `useAuth().isAuthenticated` instead. */
 export function isAuthenticated(): boolean {
   return true;
 }
