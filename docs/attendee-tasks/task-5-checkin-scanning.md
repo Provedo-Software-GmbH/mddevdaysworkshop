@@ -13,6 +13,7 @@ Implementiere ein vollständiges Check-in-System für Events. Event-Personal sol
 - QR-Codes werden von Aufgabe 4 generiert und enthalten das `TicketSecret`
 - Die Admin-Oberfläche ist vorgebaut mit Sidebar-Navigation
 - Es gibt keine Check-in-Funktionalität
+- Frontend OpenTelemetry ist vorkonfiguriert (`lib/telemetry.ts`): `fetch()` Calls senden automatisch `traceparent` Header für End-to-End Tracing. Nutze `startSpan()` für Scanner- und Check-in-Aktionen
 
 ## Aufgaben
 
@@ -146,3 +147,4 @@ Implementiere ein vollständiges Check-in-System für Events. Event-Personal sol
 - [ ] Sound-Feedback bei Scan (Erfolg/Fehler)
 - [ ] Unit Tests für CheckInService (alle Validierungs-Szenarien)
 - [ ] E2E Test für Check-in-Flow (manuell)
+- [ ] Frontend-Telemetry: Custom Spans für Scanner-Aktionen (z.B. `checkin.scan`, `checkin.manual`, `checkin.search`) via `lib/telemetry.ts`

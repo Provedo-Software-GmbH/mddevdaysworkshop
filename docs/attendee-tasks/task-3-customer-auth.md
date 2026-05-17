@@ -10,6 +10,7 @@ Implementiere die Kundenauthentifizierung mit Microsoft Entra External Identitie
 - Das Order-Model hat ein optionales `CustomerId` Feld
 - MSAL.js ist bereits als Dependency installiert
 - Entra External Identities Tenant wird vom Workshop-Leiter bereitgestellt
+- Frontend OpenTelemetry ist vorkonfiguriert (`lib/telemetry.ts`): Nutze `startSpan()` / `trackPageView()` für Auth-Flows (Login, Registrierung, Profilansicht)
 
 ## Aufgaben
 
@@ -105,3 +106,4 @@ Implementiere die Kundenauthentifizierung mit Microsoft Entra External Identitie
 - [ ] Admin- und Customer-Auth koexistieren korrekt
 - [ ] Unit Tests für Token-Validierung und Customer-Service
 - [ ] E2E Test für Login und Bestellhistorie
+- [ ] Frontend-Telemetry: Custom Spans für Auth-Flows (z.B. `auth.login`, `auth.register`, `auth.logout`) via `lib/telemetry.ts`

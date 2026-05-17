@@ -147,6 +147,7 @@ src/
 3. **Vertical Slice-adjacent** — Domain/Application/Infrastructure layers but features are cohesive
 4. **Records for DTOs** — Request/Response models as records
 5. **Domain models as classes** — Rich domain models with behavior
+6. **End-to-end distributed tracing** — Frontend propagates `traceparent` headers (W3C Trace Context) via OpenTelemetry fetch instrumentation; backend automatically continues the trace via ASP.NET Core + OpenTelemetry; Application Insights shows a single correlated transaction from browser → API → Cosmos DB
 
 ### Cosmos DB Container Design
 
@@ -320,6 +321,7 @@ frontend/
 │   ├── lib/
 │   │   ├── api.ts               # API client (fetch wrapper)
 │   │   ├── auth.ts              # Auth utilities
+│   │   ├── telemetry.ts         # OpenTelemetry tracing (distributed traces, fetch instrumentation, custom spans)
 │   │   └── utils.ts             # shadcn/ui utilities
 │   └── types/
 │       ├── event.ts
@@ -354,7 +356,7 @@ frontend/
 | Azure Container Apps           | Consumption (serverless)| Backend API + Frontend SPA     |
 | Azure Cosmos DB                | Serverless              | Database (Managed Identity)    |
 | Azure Container Registry       | **Existing** (reuse)    | Docker images                  |
-| Azure Application Insights     | Pay-as-you-go           | APM, logging, traces (via OpenTelemetry) |
+| Azure Application Insights     | Pay-as-you-go           | APM, logging, traces (via OpenTelemetry — Backend & Frontend) |
 | Azure Log Analytics Workspace  | Pay-as-you-go           | Centralized logs               |
 | Azure Key Vault                | Standard                | Secrets (ASP.NET config provider) |
 | User-Assigned Managed Identity | Free                    | Auth to Azure services         |

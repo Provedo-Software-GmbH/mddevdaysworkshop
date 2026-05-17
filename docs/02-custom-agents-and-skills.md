@@ -40,6 +40,8 @@ Custom agents are defined in `.github/agents/` as markdown files. Each agent has
 - Accessibility requirements (aria labels, keyboard navigation)
 - Responsive design (mobile-first)
 - Always create types in the `types/` directory
+- Include OpenTelemetry tracing for new pages and significant user interactions using `lib/telemetry.ts` utilities (`startSpan`, `trackPageView`, `withSpan`)
+- Track page views on route changes and wrap key operations (form submissions, data loads) in custom spans
 
 **Tools**: Code interpreter, file operations
 
@@ -104,6 +106,7 @@ Custom agents are defined in `.github/agents/` as markdown files. Each agent has
   - Backend: Add metric emission to relevant endpoints
   - Frontend: Add dashboard chart/card components
 - Reference `ITelemetryService` patterns used in the project (Activity-based tracing, Metrics-based counters/histograms)
+- For frontend features, reference `lib/telemetry.ts` and use `startSpan`, `trackPageView`, `withSpan` for custom frontend tracing
 
 **Tools**: Code interpreter, file operations
 

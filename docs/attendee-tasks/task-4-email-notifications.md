@@ -11,6 +11,7 @@ Implementiere PDF-Ticket-Generierung mit QR-Codes für Check-in sowie E-Mail-Ben
 - Orders werden bereits erstellt und haben einen Status
 - Keine E-Mail-Funktionalität ist bisher implementiert
 - Application Insights ist für Monitoring bereits konfiguriert (via OpenTelemetry SDK mit Azure Monitor Exporter)
+- Frontend OpenTelemetry ist vorkonfiguriert (`lib/telemetry.ts`): `fetch()` Calls senden automatisch `traceparent` Header an das Backend für End-to-End Distributed Tracing. Nutze `startSpan()` für Ticket-Download-Aktionen
 
 ## Aufgaben
 
@@ -143,3 +144,4 @@ Implementiere PDF-Ticket-Generierung mit QR-Codes für Check-in sowie E-Mail-Ben
 - [ ] Mobile-freundliche Ticket-Ansicht mit QR-Code
 - [ ] Unit Tests für PDF-Generierung, Template Rendering und QR-Code
 - [ ] Fehlerbehandlung und Retry bei E-Mail-Versand
+- [ ] Frontend-Telemetry: Custom Spans für Ticket-Aktionen (z.B. `ticket.downloadPdf`, `ticket.viewQrCode`) via `lib/telemetry.ts`

@@ -11,6 +11,7 @@ Implementiere die komplette Zahlungsabwicklung mit Stripe inkl. Stornierung und 
 - Stripe Test-API-Keys werden als GitHub Secrets bereitgestellt (`STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`)
 - Im Backend existiert bereits ein Order-Model mit Status `Pending`
 - Die Ticket-Auswahl im Frontend ist vorgebaut, aber der "Checkout" Button führt noch nirgendwo hin
+- Frontend OpenTelemetry ist vorkonfiguriert (`lib/telemetry.ts`): `fetch()` Calls senden automatisch `traceparent` Header an das Backend für End-to-End Distributed Tracing. Nutze `startSpan()` / `withSpan()` für Custom Spans bei Checkout-Aktionen
 
 ## Aufgaben
 
@@ -98,3 +99,4 @@ Implementiere die komplette Zahlungsabwicklung mit Stripe inkl. Stornierung und 
 - [ ] 🆕 Voucher-Code kann am Checkout eingelöst werden
 - [ ] Unit Tests für PaymentService (inkl. Refund-Szenarien)
 - [ ] E2E Test für den kompletten Checkout-Flow
+- [ ] Frontend-Telemetry: Custom Spans für Checkout-Flow (z.B. `checkout.start`, `checkout.success`, `checkout.cancel`) via `lib/telemetry.ts`
