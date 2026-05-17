@@ -4,30 +4,38 @@
 
 This is what needs to be implemented **before** the workshop.
 
-### Step 1: Project Scaffolding
-- [ ] Create .NET 11 solution with 5 projects (Api, Domain, Application, Infrastructure, Tests)
-- [ ] Create frontend with `bun create vite` + React + TypeScript
-- [ ] Initialize shadcn/ui with Tailwind CSS
-- [ ] Configure Vite proxy to backend
-- [ ] Set up `.github/copilot-setup-steps.yml`
-- [ ] Create Dockerfiles (backend + frontend)
-- [ ] Set up GitHub Actions CI pipeline
+### Step 1: Project Scaffolding ✅
 
-### Step 2: Domain Models
-- [ ] `Event`, `EventStatus`
-- [ ] `TicketType`, `LineItemTemplate`
-- [ ] `TaxRate`
-- [ ] `Order`, `OrderLineItem`, `OrderStatus`
+- [x] Create .NET 11 solution with 5 projects (Api, Domain, Application, Infrastructure, Tests) — using modern `.slnx` format, `Directory.Build.props` targets `net11.0` with preview language features, nullable reference types enabled
+- [x] Create frontend with `bun create vite` + React 19 + TypeScript — Vite 8, Bun package manager, React Router, TanStack Query, Zod, React Hook Form installed
+- [x] Initialize shadcn/ui with Tailwind CSS — `new-york` style, CSS variables, `lucide-react` icons, `button`, `card`, `badge` components installed
+- [x] Configure Vite proxy to backend — `/api` → `http://localhost:5000`
+- [x] Set up `.github/workflows/copilot-setup-steps.yml` — installs .NET 11 preview + Bun, restores dependencies
+- [x] Create Dockerfiles (backend + frontend) — backend: multi-stage SDK → ASP.NET runtime on port 5000; frontend: Bun build → nginx:alpine with SPA routing + API proxy
+- [x] Set up GitHub Actions CI pipeline — `ci.yml` with concurrent backend (.NET build/test/lint) and frontend (Bun install/lint/build) jobs
 
-### Step 3: Infrastructure Layer
-- [ ] Cosmos DB service (generic CRUD)
-- [ ] Container configuration
-- [ ] `EventRepository`
-- [ ] `TicketTypeRepository`
-- [ ] `TaxRateRepository`
-- [ ] `OrderRepository` (basic)
-- [ ] OpenTelemetry-based `TelemetryService` (Activity + Metrics)
-- [ ] Telemetry in `CosmosDbService` — spans, duration histograms, operation counters for all Cosmos operations
+### Step 2: Domain Models ✅
+
+All models annotated with `[Description]` and `[JsonPropertyName]` attributes.
+
+- [x] `Event`, `EventStatus` — Event with title, description, location, dates, organizer, capacity, image/website URLs, timestamps; EventStatus enum (Draft, Published, Cancelled, Archived)
+- [x] `TicketType`, `LineItemTemplate` — TicketType with price, currency, quantity tracking, sale window, max per order; LineItemTemplate with net amount and tax rate reference
+- [x] `TaxRate` — country code (partition key), percentage, name, description, default/active flags
+- [x] `Order`, `OrderLineItem`, `OrderPosition`, `OrderStatus` — Order with customer info, voucher support, financial breakdown (net/tax/gross/discount), positions; OrderLineItem with computed totals; OrderPosition with attendee info, ticket secret, check-in tracking; OrderStatus enum
+- [x] `Voucher`, `DiscountType` — Voucher with discount type/value, usage limits, validity window, applicable ticket type filtering
+
+### Step 3: Infrastructure Layer ✅
+
+- [x] Cosmos DB service (generic CRUD) — `CosmosDbService` with GetItem, GetItems, QueryItems, Create, Upsert, Delete; camelCase serialization; development emulator key / production `DefaultAzureCredential`
+- [x] Container configuration — `CosmosContainerConfig` with container name and partition key path
+- [x] `EventRepository` — container `"events"`, partition key `/id`
+- [x] `TicketTypeRepository` — container `"ticket-types"`, partition key `/eventId`
+- [x] `TaxRateRepository` — container `"tax-rates"`, partition key `/countryCode`
+- [x] `OrderRepository` — container `"orders"`, partition key `/eventId`
+- [x] `VoucherRepository` — container `"vouchers"`, partition key `/eventId`
+- [x] OpenTelemetry-based `TelemetryService` (Activity + Metrics) — ActivitySource `"DevConfTicketing"`, Meter `"DevConfTicketing"`, `StartSpan`, `TrackEvent`, `TrackException`, `RecordHistogram`, `IncrementCounter` with `ConcurrentDictionary` caching
+- [x] Telemetry in `CosmosDbService` — spans with `db.system=cosmosdb` tags, `db.cosmos.duration` histograms, `db.cosmos.operations` counters (success/error), exception tracking
+- [x] Infrastructure service registration — `InfrastructureServiceRegistration` with Cosmos DB setup, repository singletons, OpenTelemetry tracing/metrics configuration, optional Azure Monitor exporter, database initialization (`InitializeCosmosDbAsync`)
 
 ### Step 4: Application Layer
 - [ ] Event handlers (Create, Update, Get, Publish)
