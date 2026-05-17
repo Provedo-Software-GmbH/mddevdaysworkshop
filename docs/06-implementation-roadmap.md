@@ -27,6 +27,7 @@ This is what needs to be implemented **before** the workshop.
 - [ ] `TaxRateRepository`
 - [ ] `OrderRepository` (basic)
 - [ ] OpenTelemetry-based `TelemetryService` (Activity + Metrics)
+- [ ] Telemetry in `CosmosDbService` — spans, duration histograms, operation counters for all Cosmos operations
 
 ### Step 4: Application Layer
 - [ ] Event handlers (Create, Update, Get, Publish)
@@ -34,6 +35,7 @@ This is what needs to be implemented **before** the workshop.
 - [ ] TaxRate handlers
 - [ ] Basic `TaxCalculationService`
 - [ ] Basic `CreateOrderHandler`
+- [ ] Telemetry in all handlers — `StartSpan` for each operation, `IncrementCounter` for business events (e.g. `event.created`, `order.created`), `TrackException` on failures
 
 ### Step 5: API Layer
 - [ ] Event endpoints (full CRUD)
@@ -44,6 +46,7 @@ This is what needs to be implemented **before** the workshop.
 - [ ] Health check
 - [ ] OpenAPI / Swagger
 - [ ] CORS configuration
+- [ ] Telemetry in middleware — request duration histogram, request counter with status code/endpoint tags, exception tracking in error-handling middleware
 
 ### Step 6: Frontend — Base Setup
 - [ ] React Router configuration
