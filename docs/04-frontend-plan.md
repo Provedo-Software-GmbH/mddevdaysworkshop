@@ -247,11 +247,33 @@ const result = await withSpan('loadEvents', async (span) => {
 });
 ```
 
+### Frontend Telemetry Export Strategy — Backend Proxy (Option A)
+
+The frontend exports OTLP traces via **HTTP/JSON** (`@opentelemetry/exporter-trace-otlp-http`), not gRPC — this is the standard transport for browser-based OpenTelemetry SDKs since browsers cannot use gRPC directly.
+
+Rather than exporting telemetry directly from the browser to Application Insights (which would require exposing a connection string or instrumentation key in client-side code), the frontend will proxy its OTLP data through the backend API:
+
+```
+Browser (OTLP/HTTP JSON) → POST /api/v1/telemetry → Backend → Azure Monitor (via managed identity)
+```
+
+**Implementation plan** (to be done when building the API endpoints):
+1. Add a `POST /api/v1/telemetry` endpoint on the backend that accepts OTLP JSON trace payloads
+2. The backend deserializes the incoming OTLP spans and re-exports them through its own OpenTelemetry pipeline (which already has Azure Monitor configured with managed identity)
+3. The frontend's `VITE_OTLP_ENDPOINT` points to the backend origin (e.g., `/api/v1/telemetry` or via the Vite proxy in development)
+4. No auth keys are exposed in the browser — the backend handles all Azure authentication
+
+**Benefits:**
+- No instrumentation key or connection string in client-side code
+- Traces flow through the same Azure Monitor exporter as backend traces (managed identity)
+- The backend can enrich, filter, or sample frontend spans before forwarding
+- CORS is not an issue since the frontend already talks to the backend API
+
 ### Configuration
 
 | Env Variable | Purpose | Default |
 |---|---|---|
-| `VITE_OTLP_ENDPOINT` | OTLP collector URL (e.g., Application Insights ingestion endpoint) | Not set (traces created but not exported) |
+| `VITE_OTLP_ENDPOINT` | OTLP endpoint — points to the backend telemetry proxy (`/api/v1/telemetry` via Vite proxy or full backend URL) | Not set (traces created but not exported) |
 | `VITE_APP_VERSION` | App version for service metadata | `0.0.0` |
 
 ### End-to-End Distributed Tracing (Frontend → Backend → Cosmos DB)
