@@ -19,7 +19,8 @@ public static class OrderEndpoints
         .WithName("GetOrders")
         .WithTags("Orders")
         .WithDescription("Get all orders for an event")
-        .Produces<IReadOnlyList<Order>>();
+        .Produces<IReadOnlyList<Order>>()
+        .RequireAuthorization("AdminPolicy");
 
         group.MapGet("/{id}", async (string eventId, string id, IOrderRepository repository, CancellationToken ct) =>
         {
@@ -30,7 +31,8 @@ public static class OrderEndpoints
         .WithTags("Orders")
         .WithDescription("Get an order by ID")
         .Produces<Order>()
-        .ProducesProblem(StatusCodes.Status404NotFound);
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .RequireAuthorization("AdminPolicy");
 
         group.MapPost("/", async (string eventId, CreateOrderRequest request, CreateOrderHandler handler, CancellationToken ct) =>
         {

@@ -4,6 +4,7 @@ using DevConfTicketing.Application.Events;
 using DevConfTicketing.Application.Orders;
 using DevConfTicketing.Application.Tickets;
 using DevConfTicketing.Infrastructure;
+using Microsoft.Identity.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
+
+// Authentication — Microsoft Entra ID (JWT Bearer)
+builder.Services.AddMicrosoftIdentityWebApiAuthentication(builder.Configuration);
+
+// Authorization policies — roles defined in Entra ID App Registration
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("AdminPolicy", policy =>
+        policy.RequireRole("Admin", "EventManager"))
+    .AddPolicy("EventManagerPolicy", policy =>
+        policy.RequireRole("EventManager", "Admin"));
 
 builder.Services.AddInfrastructureServices(builder.Configuration, builder.Environment);
 
@@ -62,6 +73,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors();
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Health check
 app.MapGet("/health", () => Results.Ok(new { Status = "Healthy", Timestamp = DateTimeOffset.UtcNow }))

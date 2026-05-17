@@ -56,7 +56,8 @@ public static class TicketTypeEndpoints
         .WithTags("TicketTypes")
         .WithDescription("Create a new ticket type for an event")
         .Produces<TicketType>(StatusCodes.Status201Created)
-        .ProducesValidationProblem();
+        .ProducesValidationProblem()
+        .RequireAuthorization("AdminPolicy");
 
         group.MapPut("/{id}", async (string eventId, string id, UpdateTicketTypeRequest request, UpdateTicketTypeHandler handler, CancellationToken ct) =>
         {
@@ -83,7 +84,8 @@ public static class TicketTypeEndpoints
         .WithTags("TicketTypes")
         .WithDescription("Update an existing ticket type")
         .Produces<TicketType>()
-        .ProducesProblem(StatusCodes.Status404NotFound);
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .RequireAuthorization("AdminPolicy");
 
         group.MapDelete("/{id}", async (string eventId, string id, DeleteTicketTypeHandler handler, CancellationToken ct) =>
         {
@@ -93,7 +95,8 @@ public static class TicketTypeEndpoints
         .WithName("DeleteTicketType")
         .WithTags("TicketTypes")
         .WithDescription("Delete a ticket type")
-        .Produces(StatusCodes.Status204NoContent);
+        .Produces(StatusCodes.Status204NoContent)
+        .RequireAuthorization("AdminPolicy");
 
         return group;
     }
