@@ -1,6 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Azure.Cosmos" />
+    <PackageReference Include="Azure.Identity" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\DevConfTicketing.Domain\DevConfTicketing.Domain.csproj" />
     <ProjectReference Include="..\DevConfTicketing.Application\DevConfTicketing.Application.csproj" />
   </ItemGroup>
