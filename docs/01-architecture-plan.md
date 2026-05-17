@@ -9,7 +9,7 @@
 │  ┌──────────────┐         ┌──────────────────────────┐   │
 │  │   Frontend    │         │        Backend API        │   │
 │  │  (nginx/SPA)  │────────▶│   .NET 10 Minimal APIs   │   │
-│  │  React + TS   │         │                          │   │
+│  │  React + TS   │         │  + Managed Identity       │   │
 │  └──────────────┘         └──────────┬───────────────┘   │
 │                                       │                   │
 └───────────────────────────────────────┼───────────────────┘
@@ -18,15 +18,19 @@
                     │                   │                   │
               ┌─────▼─────┐     ┌──────▼──────┐    ┌──────▼──────┐
               │  Cosmos DB │     │   Stripe    │    │  Entra ID   │
-              │ (Serverless)│     │  (Payments) │    │ (Auth)      │
+              │ (Managed ID)│    │  (Payments) │    │ (Auth)      │
               └───────────┘     └─────────────┘    └─────────────┘
-                                                          │
-                    ┌─────────────────────────────────────┘
+                    │                                       │
+              ┌─────▼─────┐                          ┌─────▼──────────┐
+              │  Key Vault │                          │ Entra External │
+              │ (Managed ID)│                         │  Identities    │
+              └───────────┘                          └────────────────┘
                     │
               ┌─────▼──────────┐     ┌──────────────────┐
-              │ Entra External │     │ App Insights +    │
-              │  Identities    │     │ Log Analytics     │
-              └────────────────┘     └──────────────────┘
+              │ Microsoft      │     │ App Insights +    │
+              │ Graph API      │     │ Log Analytics     │
+              │ (Email Send)   │     └──────────────────┘
+              └────────────────┘
 ```
 
 ## Backend Architecture (.NET 10)
@@ -100,7 +104,7 @@ src/
 │   │   ├── StripePaymentService.cs
 │   │   └── StripeWebhookHandler.cs
 │   ├── Email/                      # 🔨 Attendee 4
-│   │   ├── EmailService.cs
+│   │   ├── GraphEmailService.cs    # Microsoft Graph API (Mail.Send)
 │   │   └── EmailTemplates/
 │   ├── Identity/                   # 🔨 Attendee 3
 │   │   └── EntraExternalIdService.cs
@@ -348,15 +352,23 @@ frontend/
 | Service                        | SKU / Tier              | Purpose                        |
 | ------------------------------ | ----------------------- | ------------------------------ |
 | Azure Container Apps           | Consumption (serverless)| Backend API + Frontend SPA     |
-| Azure Cosmos DB                | Serverless              | Database                       |
-| Azure Container Registry       | Basic                   | Docker images                  |
+| Azure Cosmos DB                | Serverless              | Database (Managed Identity)    |
+| Azure Container Registry       | **Existing** (reuse)    | Docker images                  |
 | Azure Application Insights     | Pay-as-you-go           | APM, logging, traces           |
 | Azure Log Analytics Workspace  | Pay-as-you-go           | Centralized logs               |
-| Azure Key Vault                | Standard                | Secrets (Stripe keys etc.)     |
+| Azure Key Vault                | Standard                | Secrets (ASP.NET config provider) |
+| User-Assigned Managed Identity | Free                    | Auth to Azure services         |
+| Microsoft Graph API            | Included (M365)         | Email sending (Mail.Send)      |
 | Entra ID                       | Included (Free tier)    | Admin auth                     |
 | Entra External Identities      | Pay-as-you-go (MAU)     | Customer auth                  |
 
-Estimated monthly cost (low traffic): **~€20-40/month**
+Estimated monthly cost (low traffic): **~€7-20/month**
+
+> **Key design decisions**:
+> - **Managed Identities** for all Azure service access (no connection strings)
+> - **ASP.NET Key Vault configuration provider** for secrets (not Container App env vars)
+> - **Microsoft Graph API** for email (not Azure Communication Services)
+> - **Existing ACR** is reused (no new registry provisioned)
 
 ## CI/CD Pipeline
 
