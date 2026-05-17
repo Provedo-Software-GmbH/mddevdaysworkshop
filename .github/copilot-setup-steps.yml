@@ -2,9 +2,14 @@
 # This file configures the environment for GitHub Copilot coding agent
 
 setup:
-  - name: Install .NET 10 SDK
+  - name: Install .NET 11 SDK
     run: |
-      # .NET 10 is pre-installed in the runner
+      curl -Lo dotnet.tar.gz https://aka.ms/dotnet/11.0/preview/dotnet-sdk-linux-x64.tar.gz
+      mkdir -p $HOME/dotnet
+      tar -C $HOME/dotnet -xf dotnet.tar.gz
+      rm dotnet.tar.gz
+      echo "DOTNET_ROOT=$HOME/dotnet" >> $GITHUB_ENV
+      echo "$HOME/dotnet" >> $GITHUB_PATH
 
   - name: Install Bun
     run: |
