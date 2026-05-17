@@ -57,17 +57,17 @@ All models annotated with `[Description]` and `[JsonPropertyName]` attributes.
 - [x] Frontend telemetry proxy endpoint (`POST /api/v1/telemetry`) — accepts OTLP/HTTP JSON traces from the browser and re-exports via the backend's OpenTelemetry pipeline (no auth keys in the browser)
 - [x] Telemetry in middleware — request duration histogram, request counter with status code/endpoint tags, exception tracking in error-handling middleware
 
-### Step 6: Frontend — Base Setup
-- [ ] React Router configuration
-- [ ] TanStack Query provider
-- [ ] API client (`lib/api.ts`)
-- [ ] Auth stub (`lib/auth.ts`)
-- [ ] OpenTelemetry telemetry service (`lib/telemetry.ts`) — distributed tracing, fetch auto-instrumentation with `traceparent` header propagation (W3C Trace Context), document load spans, custom span helpers. Uses OTLP/HTTP (not gRPC) — browser-compatible. Traces exported via backend proxy (`POST /api/v1/telemetry`) to avoid exposing auth keys in the browser.
-- [ ] Telemetry initialization in `main.tsx`
-- [ ] End-to-end distributed tracing verified: frontend `traceparent` → backend continues trace → Cosmos DB spans in same trace
-- [ ] Public layout (header, footer, nav)
-- [ ] Admin layout (sidebar, content area)
-- [ ] shadcn/ui components installed
+### Step 6: Frontend — Base Setup ✅
+- [x] React Router configuration
+- [x] TanStack Query provider
+- [x] API client (`lib/api.ts`)
+- [x] Auth stub (`lib/auth.ts`)
+- [x] OpenTelemetry telemetry service (`lib/telemetry.ts`) — distributed tracing, fetch auto-instrumentation with `traceparent` header propagation (W3C Trace Context), document load spans, custom span helpers. Uses OTLP/HTTP (not gRPC) — browser-compatible. Traces exported via backend proxy (`POST /api/v1/telemetry`) to avoid exposing auth keys in the browser.
+- [x] Telemetry initialization in `main.tsx`
+- [x] End-to-end distributed tracing verified: frontend `traceparent` → backend continues trace → Cosmos DB spans in same trace
+- [x] Public layout (header, footer, nav)
+- [x] Admin layout (sidebar, content area)
+- [x] shadcn/ui components installed
 
 ### Step 7: Frontend — Public Pages
 - [ ] Event listing page (`/`)
