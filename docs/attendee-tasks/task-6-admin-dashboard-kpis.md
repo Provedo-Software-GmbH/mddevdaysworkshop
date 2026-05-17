@@ -1,8 +1,10 @@
-# Aufgabe 6: Admin Dashboard & KPIs
+# Aufgabe 6: Admin Dashboard, KPIs & Data Export
 
 ## Übersicht
 
-Implementiere ein Admin-Dashboard mit Echtzeit-Verkaufszahlen, Auslastungsmetriken und Business-KPIs. Nutze Application Insights Custom Metrics für das Backend und Recharts/shadcn Charts für das Frontend.
+Implementiere ein Admin-Dashboard mit Echtzeit-Verkaufszahlen, Auslastungsmetriken und Business-KPIs. Zusätzlich: CSV/Excel-Export von Teilnehmerlisten und Bestellungen für die Buchhaltung. Nutze Application Insights Custom Metrics für das Backend und Recharts/shadcn Charts für das Frontend.
+
+> **Inspiriert von pretix**: pretix bietet umfangreiche Exporter (CSV/XLSX für Orders, Teilnehmer, Steuerberichte, Check-in-Listen) und ein Statistics-Dashboard. Wir implementieren die wichtigsten Exporte + Dashboard.
 
 ## Kontext
 
@@ -55,6 +57,16 @@ Implementiere ein Admin-Dashboard mit Echtzeit-Verkaufszahlen, Auslastungsmetrik
    - Optional: Materialized View Pattern (vorberechnete Aggregate)
    - Zeitraum-Filter: Heute, Diese Woche, Dieser Monat, Custom Range
 
+6. **Data Export Endpoints** (🆕 inspiriert von pretix):
+   - `GET /api/v1/events/{eventId}/export/attendees?format=csv` — Teilnehmerliste
+     - Spalten: Name, Email, Ticket-Typ, Bestellcode, Bestelldatum, Check-in-Status
+   - `GET /api/v1/events/{eventId}/export/orders?format=csv` — Bestellübersicht
+     - Spalten: Bestellcode, Datum, Kunde, Status, Netto, Steuer, Brutto, Zahlungsmethode
+   - `GET /api/v1/events/{eventId}/export/tax-report?format=csv` — Steuerbericht
+     - Spalten: Steuersatz, Nettobetrag, Steuerbetrag, Bruttobetrag (gruppiert)
+   - Content-Type: `text/csv` mit UTF-8 BOM (für Excel-Kompatibilität)
+   - Optional: `format=xlsx` als Stretch Goal
+
 ### Frontend
 
 1. **Dashboard Übersicht** (`/admin/dashboard`):
@@ -81,7 +93,15 @@ Implementiere ein Admin-Dashboard mit Echtzeit-Verkaufszahlen, Auslastungsmetrik
    - Exportierbar als CSV (für Buchhaltung)
    - Zeitraum-Filter
 
-4. **Dashboard Komponenten**:
+4. **Export-Bereich** (🆕 inspiriert von pretix) (`/admin/events/:id/export`):
+   - Übersicht aller verfügbaren Exporte
+   - "Teilnehmerliste exportieren" → CSV Download
+   - "Bestellungen exportieren" → CSV Download
+   - "Steuerbericht exportieren" → CSV Download
+   - Zeitraum-Filter für alle Exporte
+   - Status-Filter (nur bezahlte, alle, stornierte)
+
+5. **Dashboard Komponenten**:
    - `KpiCard` — Zahl mit Trend-Indikator (↑/↓)
    - `SalesTrendChart` — Line/Area Chart mit Zeitfilter
    - `OccupancyChart` — Horizontal Bar Chart
@@ -123,5 +143,9 @@ Implementiere ein Admin-Dashboard mit Echtzeit-Verkaufszahlen, Auslastungsmetrik
 - [ ] Zeitraum-Filter funktioniert
 - [ ] Responsive Design für alle Charts
 - [ ] Application Insights Custom Metrics werden emittiert
+- [ ] 🆕 CSV-Export: Teilnehmerliste mit Check-in-Status
+- [ ] 🆕 CSV-Export: Bestellübersicht mit Zahlungsstatus
+- [ ] 🆕 CSV-Export: Steuerbericht gruppiert nach Steuersatz
 - [ ] Unit Tests für MetricsService Berechnungen
+- [ ] Unit Tests für CSV-Export Formatierung
 - [ ] E2E Test für Dashboard-Seite

@@ -1,8 +1,10 @@
-# Aufgabe 2: Invoice & Tax Calculation Engine
+# Aufgabe 2: Invoice, Tax Calculation & Cancellation Invoices
 
 ## Übersicht
 
-Implementiere eine vollständige Rechnungserstellung mit korrekter deutscher Steuerberechnung. Rechnungen sollen nach Bezahlung automatisch generiert werden können und alle gesetzlichen Anforderungen erfüllen.
+Implementiere eine vollständige Rechnungserstellung mit korrekter deutscher Steuerberechnung. Rechnungen sollen nach Bezahlung automatisch generiert werden können und alle gesetzlichen Anforderungen erfüllen. Bei Stornierung wird automatisch eine Stornorechnung erstellt.
+
+> **Inspiriert von pretix**: pretix generiert automatisch Stornorechnungen bei Bestellungsstornierung — ein gesetzliches Muss in Deutschland.
 
 ## Kontext
 
@@ -54,6 +56,14 @@ Implementiere eine vollständige Rechnungserstellung mit korrekter deutscher Ste
    - `GET /api/v1/orders/{id}/invoice` — Rechnungsdaten abrufen
    - `GET /api/v1/orders/{id}/invoice/pdf` — PDF herunterladen
 
+6. **Stornorechnung (Cancellation Invoice)** (🆕 inspiriert von pretix):
+   - Wird automatisch erstellt wenn eine Bestellung storniert wird (Integration mit Attendee 1)
+   - Eigene fortlaufende Nummer (z.B. `STORNO-2026-00001`) oder gleiche Nummernkreis
+   - Referenziert die Original-Rechnung
+   - Enthält die gleichen Positionen mit negativen Beträgen
+   - Invoice-Typ: `Invoice` vs `CancellationInvoice`
+   - `POST /api/v1/orders/{id}/invoice/cancel` — Stornorechnung manuell erstellen
+
 ### Frontend
 
 1. **Invoice-Ansicht im Admin** (`/admin/invoices`):
@@ -93,5 +103,8 @@ Implementiere eine vollständige Rechnungserstellung mit korrekter deutscher Ste
 - [ ] Steuer-Zusammenfassung gruppiert nach Steuersatz
 - [ ] PDF enthält alle Pflichtangaben nach §14 UStG
 - [ ] Admin kann Rechnungen einsehen und PDFs herunterladen
+- [ ] 🆕 Stornorechnung wird bei Stornierung automatisch erstellt
+- [ ] 🆕 Stornorechnung referenziert die Originalrechnung
 - [ ] Unit Tests für TaxCalculationService mit verschiedenen Szenarien
 - [ ] Unit Tests für Invoice-Nummern-Generierung
+- [ ] 🆕 Unit Tests für Stornorechnung-Erstellung

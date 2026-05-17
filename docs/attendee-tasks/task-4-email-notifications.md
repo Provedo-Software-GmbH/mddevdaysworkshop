@@ -1,8 +1,10 @@
-# Aufgabe 4: Email Notifications & Ticket Delivery
+# Aufgabe 4: Ticket PDF, QR-Codes & Email Notifications
 
 ## Übersicht
 
-Implementiere E-Mail-Benachrichtigungen für Bestellbestätigungen, Ticket-Zustellung und Event-Erinnerungen. Nutze Azure Communication Services oder einen ähnlichen E-Mail-Provider.
+Implementiere PDF-Ticket-Generierung mit QR-Codes für Check-in sowie E-Mail-Benachrichtigungen für Bestellbestätigungen, Ticket-Zustellung und Event-Erinnerungen. Nutze Azure Communication Services oder einen ähnlichen E-Mail-Provider.
+
+> **Inspiriert von pretix**: pretix hat ein komplettes Ticket-PDF-System mit individuellem QR-Code pro Position, Ticket-Download-Seiten und -APIs. Wir implementieren die Kernfeatures davon.
 
 ## Kontext
 
@@ -43,11 +45,28 @@ Implementiere E-Mail-Benachrichtigungen für Bestellbestätigungen, Ticket-Zuste
    - Queue-basiert oder direkt (für Workshop: direkt)
 
 4. **QR-Code Generator**:
-   - Eindeutiger Check-in Code pro Ticket
-   - QR-Code als Base64 Image generieren
-   - In E-Mail einbetten
+   - Jede Order-Position hat ein kryptografisches `TicketSecret` (vorgebaut im Order-Model)
+   - QR-Code kodiert das `TicketSecret` (nicht die Order-ID — Sicherheit!)
+   - QR-Code als Base64 Image generieren (z.B. `QRCoder` NuGet Package)
+   - In E-Mail und PDF einbetten
 
-5. **Notification Endpoints** (`Endpoints/NotificationEndpoints.cs`):
+5. **PDF Ticket Generierung** (🆕 inspiriert von pretix):
+   - PDF mit QuestPDF oder ähnlicher Library generieren
+   - Jedes Ticket als eigene Seite im PDF:
+     - Event-Name, Datum, Ort
+     - Ticket-Typ und Teilnehmername
+     - Bestellcode (z.B. `MDDD-A7K2`)
+     - QR-Code (groß, scannbar)
+     - Preisaufschlüsselung
+   - Multi-Ticket PDF: alle Tickets einer Bestellung in einem PDF
+   - Einzelticket-Download pro Position
+
+6. **Ticket-Download Endpoints** (🆕):
+   - `GET /api/v1/orders/{id}/tickets/pdf` — Alle Tickets als PDF
+   - `GET /api/v1/orders/{id}/positions/{posId}/ticket/pdf` — Einzelticket PDF
+   - `GET /api/v1/orders/{orderCode}/tickets/qr` — QR-Codes als JSON
+
+7. **Notification Endpoints** (`Endpoints/NotificationEndpoints.cs`):
    - `POST /api/v1/orders/{id}/send-confirmation` — Bestellbestätigung senden
    - `POST /api/v1/orders/{id}/send-tickets` — Tickets senden
    - `POST /api/v1/events/{id}/send-reminder` — Erinnerung an alle senden
@@ -72,9 +91,11 @@ Implementiere E-Mail-Benachrichtigungen für Bestellbestätigungen, Ticket-Zuste
    - Versand-Historie anzeigen
 
 3. **Ticket-Ansicht für Kunden** (Public):
-   - `/orders/{id}/tickets` — Ticket-Seite mit QR-Code
-   - Druckbare Version
+   - `/orders/{orderCode}/tickets` — Ticket-Seite mit QR-Code (🆕 per OrderCode, nicht ID)
+   - "PDF herunterladen" Button (🆕)
+   - Druckbare Version (CSS @media print)
    - Mobile-optimierte Ansicht
+   - Einzelne Tickets auswählbar (bei Multi-Ticket Orders)
 
 4. **E-Mail-Vorschau Komponente**:
    - Admin kann E-Mail-Template als Vorschau sehen
@@ -103,10 +124,13 @@ Implementiere E-Mail-Benachrichtigungen für Bestellbestätigungen, Ticket-Zuste
 
 - [ ] Bestellbestätigung wird per E-Mail gesendet
 - [ ] E-Mails enthalten korrekte Bestelldetails und Preise
-- [ ] QR-Code wird für jedes Ticket generiert
-- [ ] Ticket-E-Mail enthält QR-Code
+- [ ] QR-Code wird für jedes Ticket generiert (basierend auf TicketSecret)
+- [ ] 🆕 PDF-Tickets können heruntergeladen werden (alle + einzeln)
+- [ ] 🆕 PDF enthält Event-Details, QR-Code, Teilnehmername, Bestellcode
+- [ ] 🆕 Ticket-Download-Seite für Kunden (per OrderCode)
+- [ ] Ticket-E-Mail enthält QR-Code und Link zur Download-Seite
 - [ ] Event-Erinnerung kann an alle Teilnehmer gesendet werden
 - [ ] Admin kann Benachrichtigungen verwalten und Vorschau sehen
 - [ ] Mobile-freundliche Ticket-Ansicht mit QR-Code
-- [ ] Unit Tests für Template Rendering und QR-Code Generierung
+- [ ] Unit Tests für PDF-Generierung, Template Rendering und QR-Code
 - [ ] Fehlerbehandlung und Retry bei E-Mail-Versand
