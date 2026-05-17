@@ -17,7 +17,8 @@ Custom agents are defined in `.github/agents/` as markdown files. Each agent has
 - Always create request/response records in separate files
 - Use primary constructors, pattern matching, nullable reference types
 - Reference `.editorconfig` and `copilot-instructions.md`
-- Include Application Insights telemetry for new operations
+- Include OpenTelemetry-based telemetry (using `System.Diagnostics.Activity` and `System.Diagnostics.Metrics`) for new operations
+- Reference `TelemetryService.ActivitySourceName` and `TelemetryService.MeterName` for custom spans and metrics
 - Must validate input and return proper HTTP status codes
 
 **Tools**: Code interpreter, file operations
@@ -102,7 +103,7 @@ Custom agents are defined in `.github/agents/` as markdown files. Each agent has
 - Create GitHub Issues with clear acceptance criteria for:
   - Backend: Add metric emission to relevant endpoints
   - Frontend: Add dashboard chart/card components
-- Reference TelemetryClient patterns used in the project
+- Reference `ITelemetryService` patterns used in the project (Activity-based tracing, Metrics-based counters/histograms)
 
 **Tools**: Code interpreter, file operations
 

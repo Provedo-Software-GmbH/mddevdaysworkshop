@@ -26,7 +26,7 @@ This is what needs to be implemented **before** the workshop.
 - [ ] `TicketTypeRepository`
 - [ ] `TaxRateRepository`
 - [ ] `OrderRepository` (basic)
-- [ ] Application Insights `TelemetryService`
+- [ ] OpenTelemetry-based `TelemetryService` (Activity + Metrics)
 
 ### Step 4: Application Layer
 - [ ] Event handlers (Create, Update, Get, Publish)

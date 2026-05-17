@@ -354,7 +354,7 @@ frontend/
 | Azure Container Apps           | Consumption (serverless)| Backend API + Frontend SPA     |
 | Azure Cosmos DB                | Serverless              | Database (Managed Identity)    |
 | Azure Container Registry       | **Existing** (reuse)    | Docker images                  |
-| Azure Application Insights     | Pay-as-you-go           | APM, logging, traces           |
+| Azure Application Insights     | Pay-as-you-go           | APM, logging, traces (via OpenTelemetry) |
 | Azure Log Analytics Workspace  | Pay-as-you-go           | Centralized logs               |
 | Azure Key Vault                | Standard                | Secrets (ASP.NET config provider) |
 | User-Assigned Managed Identity | Free                    | Auth to Azure services         |
