@@ -1,8 +1,10 @@
-# Aufgabe 1: Stripe Payment Integration
+# Aufgabe 1: Stripe Payment, Refunds & Cancellations
 
 ## Übersicht
 
-Implementiere die komplette Zahlungsabwicklung mit Stripe. Kund\*innen sollen über Stripe Checkout bezahlen können, und der Bestellstatus soll automatisch über Webhooks aktualisiert werden.
+Implementiere die komplette Zahlungsabwicklung mit Stripe inkl. Stornierung und Rückerstattung. Kund\*innen sollen über Stripe Checkout bezahlen können, der Bestellstatus soll automatisch über Webhooks aktualisiert werden, und Admins sollen Bestellungen stornieren und erstatten können.
+
+> **Inspiriert von pretix**: pretix unterstützt volle/partielle Rückerstattungen, Stornierungen und Voucher-Einlösung am Checkout. Wir implementieren die wichtigsten dieser Features.
 
 ## Kontext
 
@@ -34,6 +36,17 @@ Implementiere die komplette Zahlungsabwicklung mit Stripe. Kund\*innen sollen ü
 5. **Order Status erweitern**:
    - `PaymentInfo` zum Order-Model hinzufügen (Stripe Session ID, Payment Intent ID)
    - Status-Übergänge validieren
+6. **Stornierung & Rückerstattung** (🆕 inspiriert von pretix):
+   - `POST /api/v1/orders/{id}/cancel` — Bestellung stornieren + Stripe Refund auslösen
+   - `POST /api/v1/orders/{id}/refund` — Manuelle Rückerstattung (Admin)
+   - Handle `charge.refunded` Webhook → Order Status → `Refunded`
+   - Stornierungsdatum (`CancellationDate`) auf Order setzen
+   - Validierung: Nur bezahlte Bestellungen können storniert werden
+   - Validierung: Bereits eingecheckte Tickets warnen (aber nicht blockieren)
+7. **Voucher-Einlösung am Checkout** (🆕):
+   - Voucher-Code Feld im Checkout-Flow
+   - `POST /api/v1/vouchers/validate` aufrufen → Rabatt berechnen
+   - Rabatt in Stripe Checkout Session als Coupon oder angepasste Line Items
 
 ### Frontend
 
@@ -50,6 +63,13 @@ Implementiere die komplette Zahlungsabwicklung mit Stripe. Kund\*innen sollen ü
    - "Erneut versuchen" und "Zurück" Buttons
 4. **Checkout-Flow im Ticket-Selector verbinden**:
    - "Proceed to Checkout" → Order erstellen → Redirect zur Checkout-Seite
+5. **Voucher-Eingabe im Checkout** (🆕):
+   - Eingabefeld "Gutscheincode" mit "Einlösen" Button
+   - Validierung → Rabatt anzeigen → Aktualisierte Preise
+6. **Stornierung im Admin** (🆕):
+   - "Bestellung stornieren" Button in Order-Detail (Admin)
+   - Bestätigungsdialog mit Hinweis auf Rückerstattung
+   - Stornierungsstatus in der Bestellübersicht anzeigen
 
 ### Hinweise
 
@@ -73,5 +93,8 @@ Implementiere die komplette Zahlungsabwicklung mit Stripe. Kund\*innen sollen ü
 - [ ] Webhook aktualisiert Order Status automatisch
 - [ ] Success/Cancel Seiten zeigen korrekte Informationen
 - [ ] Fehlerbehandlung für fehlgeschlagene Zahlungen
-- [ ] Unit Tests für PaymentService
+- [ ] 🆕 Bestellungen können storniert werden mit automatischer Stripe-Rückerstattung
+- [ ] 🆕 Refund-Webhook aktualisiert Order Status
+- [ ] 🆕 Voucher-Code kann am Checkout eingelöst werden
+- [ ] Unit Tests für PaymentService (inkl. Refund-Szenarien)
 - [ ] E2E Test für den kompletten Checkout-Flow
