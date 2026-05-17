@@ -9,7 +9,6 @@ import { cn } from "@/lib/utils";
 import type { Event } from "@/types/event";
 
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -86,10 +85,7 @@ function EventCard({ event }: { event: Event }) {
     <Card className={cn("overflow-hidden transition-shadow hover:shadow-lg", past && "opacity-75")}>
       <EventImage event={event} />
       <CardHeader>
-        <div className="flex items-start justify-between gap-2">
-          <CardTitle className="line-clamp-2 text-lg">{event.title}</CardTitle>
-          <Badge variant="secondary" className="shrink-0">Published</Badge>
-        </div>
+        <CardTitle className="line-clamp-2 text-lg">{event.title}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-2 text-sm text-muted-foreground">
