@@ -46,7 +46,7 @@ public static class TicketTypeEndpoints
                 ShowRemainingQuantity = request.ShowRemainingQuantity,
                 SaleStart = request.SaleStart,
                 SaleEnd = request.SaleEnd,
-                LineItems = request.LineItems
+                LineItems = request.LineItems.ToList()
             };
 
             var created = await handler.HandleAsync(eventId, ticketType, ct);
@@ -73,7 +73,7 @@ public static class TicketTypeEndpoints
                 ShowRemainingQuantity = request.ShowRemainingQuantity,
                 SaleStart = request.SaleStart,
                 SaleEnd = request.SaleEnd,
-                LineItems = request.LineItems
+                LineItems = request.LineItems.ToList()
             };
 
             var updated = await handler.HandleAsync(eventId, id, ticketType, ct);
@@ -123,7 +123,7 @@ public record CreateTicketTypeRequest(
 
     [property: Description("Tax-relevant line item breakdown")]
     [property: JsonPropertyName("lineItems")]
-    List<LineItemTemplate> LineItems,
+    IReadOnlyList<LineItemTemplate> LineItems,
 
     [property: Description("Maximum tickets per order")]
     [property: JsonPropertyName("maxPerOrder")]
@@ -166,7 +166,7 @@ public record UpdateTicketTypeRequest(
 
     [property: Description("Tax-relevant line item breakdown")]
     [property: JsonPropertyName("lineItems")]
-    List<LineItemTemplate> LineItems,
+    IReadOnlyList<LineItemTemplate> LineItems,
 
     [property: Description("Maximum tickets per order")]
     [property: JsonPropertyName("maxPerOrder")]
