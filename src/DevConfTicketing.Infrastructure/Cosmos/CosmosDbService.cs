@@ -1,5 +1,4 @@
 using System.Net;
-using System.Text.Json;
 
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
@@ -9,10 +8,6 @@ namespace DevConfTicketing.Infrastructure.Cosmos;
 
 public class CosmosDbService(CosmosClient cosmosClient, string databaseName, ILogger<CosmosDbService> logger)
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-    };
 
     public async Task EnsureContainerAsync(CosmosContainerConfig config, CancellationToken cancellationToken = default)
     {
