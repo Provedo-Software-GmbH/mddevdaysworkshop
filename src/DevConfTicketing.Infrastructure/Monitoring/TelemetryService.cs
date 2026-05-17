@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
@@ -10,8 +11,8 @@ public class TelemetryService : ITelemetryService
     private static readonly ActivitySource ActivitySource = new("DevConfTicketing");
     private static readonly Meter Meter = new("DevConfTicketing");
 
-    private readonly Dictionary<string, Histogram<double>> _histograms = [];
-    private readonly Dictionary<string, Counter<long>> _counters = [];
+    private readonly ConcurrentDictionary<string, Histogram<double>> _histograms = new();
+    private readonly ConcurrentDictionary<string, Counter<long>> _counters = new();
 
     public Activity? StartSpan(string operationName, ActivityKind kind = ActivityKind.Internal, IDictionary<string, string>? tags = null)
     {
@@ -70,11 +71,7 @@ public class TelemetryService : ITelemetryService
 
     public void RecordHistogram(string name, double value, IDictionary<string, string>? tags = null)
     {
-        if (!_histograms.TryGetValue(name, out var histogram))
-        {
-            histogram = Meter.CreateHistogram<double>(name);
-            _histograms[name] = histogram;
-        }
+        var histogram = _histograms.GetOrAdd(name, n => Meter.CreateHistogram<double>(n));
 
         if (tags is not null)
         {
@@ -93,11 +90,7 @@ public class TelemetryService : ITelemetryService
 
     public void IncrementCounter(string name, long delta = 1, IDictionary<string, string>? tags = null)
     {
-        if (!_counters.TryGetValue(name, out var counter))
-        {
-            counter = Meter.CreateCounter<long>(name);
-            _counters[name] = counter;
-        }
+        var counter = _counters.GetOrAdd(name, n => Meter.CreateCounter<long>(n));
 
         if (tags is not null)
         {
