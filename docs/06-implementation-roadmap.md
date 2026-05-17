@@ -37,13 +37,13 @@ All models annotated with `[Description]` and `[JsonPropertyName]` attributes.
 - [x] Telemetry in `CosmosDbService` — spans with `db.system=cosmosdb` tags, `db.cosmos.duration` histograms, `db.cosmos.operations` counters (success/error), exception tracking
 - [x] Infrastructure service registration — `InfrastructureServiceRegistration` with Cosmos DB setup, repository singletons, OpenTelemetry tracing/metrics configuration, optional Azure Monitor exporter, database initialization (`InitializeCosmosDbAsync`)
 
-### Step 4: Application Layer
-- [ ] Event handlers (Create, Update, Get, Publish)
-- [ ] TicketType handlers
-- [ ] TaxRate handlers
-- [ ] Basic `TaxCalculationService`
-- [ ] Basic `CreateOrderHandler`
-- [ ] Telemetry in all handlers — `StartSpan` for each operation, `IncrementCounter` for business events (e.g. `event.created`, `order.created`), `TrackException` on failures
+### Step 4: Application Layer ✅
+- [x] Event handlers (Create, Update, Get, Publish)
+- [x] TicketType handlers
+- [x] TaxRate handlers
+- [x] Basic `TaxCalculationService`
+- [x] Basic `CreateOrderHandler`
+- [x] Telemetry in all handlers — `StartSpan` for each operation, `IncrementCounter` for business events (e.g. `event.created`, `order.created`), `TrackException` on failures
 
 ### Step 5: API Layer
 - [ ] Event endpoints (full CRUD)
