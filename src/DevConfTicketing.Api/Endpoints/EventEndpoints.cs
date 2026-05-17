@@ -143,11 +143,11 @@ public record CreateEventRequest(
 
     [property: Description("Optional URL for the event image")]
     [property: JsonPropertyName("imageUrl")]
-    string? ImageUrl = null,
+    Uri? ImageUrl = null,
 
     [property: Description("Optional URL for the event website")]
     [property: JsonPropertyName("websiteUrl")]
-    string? WebsiteUrl = null
+    Uri? WebsiteUrl = null
 );
 
 [Description("Request to update an existing event")]
@@ -182,9 +182,9 @@ public record UpdateEventRequest(
 
     [property: Description("Optional URL for the event image")]
     [property: JsonPropertyName("imageUrl")]
-    string? ImageUrl = null,
+    Uri? ImageUrl = null,
 
     [property: Description("Optional URL for the event website")]
     [property: JsonPropertyName("websiteUrl")]
-    string? WebsiteUrl = null
+    Uri? WebsiteUrl = null
 );

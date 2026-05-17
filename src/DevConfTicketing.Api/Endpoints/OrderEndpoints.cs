@@ -38,7 +38,7 @@ public static class OrderEndpoints
                 eventId,
                 request.CustomerEmail,
                 request.CustomerName,
-                request.TicketSelections,
+                new Dictionary<string, int>(request.TicketSelections),
                 request.VoucherCode,
                 ct);
 
@@ -66,7 +66,7 @@ public record CreateOrderRequest(
 
     [property: Description("Dictionary of ticket type IDs to quantities")]
     [property: JsonPropertyName("ticketSelections")]
-    Dictionary<string, int> TicketSelections,
+    IReadOnlyDictionary<string, int> TicketSelections,
 
     [property: Description("Optional voucher code to apply")]
     [property: JsonPropertyName("voucherCode")]

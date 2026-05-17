@@ -36,9 +36,12 @@ public static class InfrastructureServiceRegistration
 
             if (environment.IsDevelopment() && accountEndpoint == "https://localhost:8081")
             {
-                // Well-known Cosmos DB emulator key — this is a publicly documented credential, not a secret
-                const string cosmosEmulatorKey = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
-                return new CosmosClient(accountEndpoint, cosmosEmulatorKey, clientOptions);
+                // Use the emulator key from configuration (well-known Cosmos DB emulator credential)
+                var emulatorKey = configuration["CosmosDb:EmulatorKey"];
+                if (!string.IsNullOrEmpty(emulatorKey))
+                {
+                    return new CosmosClient(accountEndpoint, emulatorKey, clientOptions);
+                }
             }
 
             return new CosmosClient(accountEndpoint, new DefaultAzureCredential(), clientOptions);
