@@ -165,6 +165,18 @@ builder.Configuration.AddAzureKeyVault(
 - Rich HTML email with attachments supported natively
 - Integrates with existing Microsoft 365 infrastructure
 
+**Setup — Assigning `Mail.Send` to Managed Identity**:
+> Granting application permissions to a managed identity is not available through the Azure Portal UI. Use PowerShell or the Microsoft Graph API directly:
+> ```powershell
+> # Grant Mail.Send to managed identity via PowerShell
+> $graphApp = Get-MgServicePrincipal -Filter "appId eq '00000003-0000-0000-c000-000000000000'" # Microsoft Graph
+> $mailSendRole = $graphApp.AppRoles | Where-Object { $_.Value -eq "Mail.Send" }
+> $managedIdentitySp = Get-MgServicePrincipal -Filter "displayName eq '<managed-identity-name>'"
+> New-MgServicePrincipalAppRoleAssignment -ServicePrincipalId $managedIdentitySp.Id `
+>   -PrincipalId $managedIdentitySp.Id -ResourceId $graphApp.Id -AppRoleId $mailSendRole.Id
+> ```
+> Requires **Global Administrator** or **Privileged Role Administrator** consent.
+
 ---
 
 ## Estimated Monthly Cost Summary
