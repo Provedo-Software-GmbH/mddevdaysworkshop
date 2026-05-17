@@ -1,0 +1,22 @@
+# Copilot Cloud Agent Setup Steps
+# This file configures the environment for GitHub Copilot coding agent
+
+setup:
+  - name: Install .NET 10 SDK
+    run: |
+      # .NET 10 is pre-installed in the runner
+
+  - name: Install Bun
+    run: |
+      curl -fsSL https://bun.sh/install | bash
+      echo "$HOME/.bun/bin" >> $GITHUB_PATH
+
+  - name: Restore .NET dependencies
+    run: |
+      cd src
+      dotnet restore
+
+  - name: Install frontend dependencies
+    run: |
+      cd frontend
+      bun install --frozen-lockfile
