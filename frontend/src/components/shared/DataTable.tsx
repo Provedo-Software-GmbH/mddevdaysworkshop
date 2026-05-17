@@ -14,6 +14,7 @@ export interface Column<T> {
   key: string;
   header: string;
   sortable?: boolean;
+  sortValue?: (item: T) => string | number;
   render: (item: T) => React.ReactNode;
 }
 
@@ -56,8 +57,8 @@ export function DataTable<T>({
     if (!col) return data;
 
     return [...data].sort((a, b) => {
-      const aVal = String(col.render(a) ?? "");
-      const bVal = String(col.render(b) ?? "");
+      const aVal = col.sortValue ? String(col.sortValue(a)) : String(col.render(a) ?? "");
+      const bVal = col.sortValue ? String(col.sortValue(b)) : String(col.render(b) ?? "");
       const cmp = aVal.localeCompare(bVal, undefined, { numeric: true });
       return sortDir === "asc" ? cmp : -cmp;
     });
