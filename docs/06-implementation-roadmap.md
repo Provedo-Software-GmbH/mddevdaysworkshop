@@ -60,11 +60,11 @@ All models annotated with `[Description]` and `[JsonPropertyName]` attributes.
 ### Step 6: Frontend — Base Setup ✅
 - [x] React Router configuration
 - [x] TanStack Query provider
-- [x] API client (`lib/api.ts`)
-- [x] Auth stub (`lib/auth.ts`)
-- [x] OpenTelemetry telemetry service (`lib/telemetry.ts`) — distributed tracing, fetch auto-instrumentation with `traceparent` header propagation (W3C Trace Context), document load spans, custom span helpers. Uses OTLP/HTTP (not gRPC) — browser-compatible. Traces exported via backend proxy (`POST /api/v1/telemetry`) to avoid exposing auth keys in the browser.
-- [x] Telemetry initialization in `main.tsx`
-- [x] End-to-end distributed tracing verified: frontend `traceparent` → backend continues trace → Cosmos DB spans in same trace
+- [x] API client (`lib/api.ts`) *(implemented in Step 5)*
+- [x] Auth stub (`lib/auth.ts`) *(implemented in Step 5)*
+- [x] OpenTelemetry telemetry service (`lib/telemetry.ts`) — distributed tracing, fetch auto-instrumentation with `traceparent` header propagation (W3C Trace Context), document load spans, custom span helpers. Uses OTLP/HTTP (not gRPC) — browser-compatible. Traces exported via backend proxy (`POST /api/v1/telemetry`) to avoid exposing auth keys in the browser. *(implemented in Step 5)*
+- [x] Telemetry initialization in `main.tsx` *(implemented in Step 5)*
+- [x] End-to-end distributed tracing verified: frontend `traceparent` → backend continues trace → Cosmos DB spans in same trace *(wired in Step 5; runtime verification requires deployed infrastructure)*
 - [x] Public layout (header, footer, nav)
 - [x] Admin layout (sidebar, content area)
 - [x] shadcn/ui components installed
