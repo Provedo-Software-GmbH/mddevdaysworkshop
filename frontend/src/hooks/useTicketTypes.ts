@@ -23,7 +23,7 @@ export interface CreateTicketTypeData {
   saleEnd?: string | null;
 }
 
-export interface UpdateTicketTypeData extends CreateTicketTypeData {}
+export type UpdateTicketTypeData = CreateTicketTypeData;
 
 export function useCreateTicketType() {
   const queryClient = useQueryClient();

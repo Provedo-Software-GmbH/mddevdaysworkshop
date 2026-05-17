@@ -76,22 +76,22 @@ All models annotated with `[Description]` and `[JsonPropertyName]` attributes.
 - [x] Ticket selection page (`/events/:id/tickets`) — quantity selectors per ticket type (respects maxPerOrder & availability), line item breakdown with net/tax/gross, sticky order summary with grand total, "Proceed to Checkout" placeholder
 - [x] Page view telemetry on route changes (`trackPageView`) — tracked on all public pages via `useEffect` + `useLocation`
 
-### Step 8: Frontend — Admin Pages
-- [ ] Event management list (`/admin/events`)
-- [ ] Create event form (`/admin/events/new`)
-- [ ] Edit event form (`/admin/events/:id/edit`)
-- [ ] Ticket type management (`/admin/events/:id/ticket-types`)
-- [ ] Tax rate management (`/admin/tax-rates`)
-- [ ] Order list (`/admin/events/:id/orders`)
-- [ ] Telemetry spans for form submissions and admin actions
+### Step 8: Frontend — Admin Pages ✅
+- [x] Event management list (`/admin/events`)
+- [x] Create event form (`/admin/events/new`)
+- [x] Edit event form (`/admin/events/:id/edit`)
+- [x] Ticket type management (`/admin/events/:id/ticket-types`)
+- [x] Tax rate management (`/admin/tax-rates`)
+- [x] Order list (`/admin/events/:id/orders`)
+- [x] Telemetry spans for form submissions and admin actions
 
-### Step 9: Frontend — Shared Components
-- [ ] DataTable with sorting & pagination
-- [ ] EventCard, EventForm, EventStatusBadge
-- [ ] TicketTypeCard, TicketTypeForm, TicketSelector
-- [ ] LineItemEditor (dynamic form)
-- [ ] CurrencyDisplay, TaxBreakdown
-- [ ] LoadingSpinner, ErrorBoundary (with `trackError` telemetry), EmptyState, ConfirmDialog
+### Step 9: Frontend — Shared Components ✅
+- [x] DataTable with sorting & pagination
+- [x] EventCard, EventForm, EventStatusBadge
+- [x] TicketTypeCard, TicketTypeForm, TicketSelector
+- [x] LineItemEditor (dynamic form)
+- [x] CurrencyDisplay, TaxBreakdown
+- [x] LoadingSpinner, ErrorBoundary (with `trackError` telemetry), EmptyState, ConfirmDialog
 
 ### Step 10: Tests (Examples)
 - [ ] Event creation validation tests

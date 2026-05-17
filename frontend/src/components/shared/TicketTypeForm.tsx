@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
@@ -49,7 +49,7 @@ export function TicketTypeForm({
   submitLabel,
 }: TicketTypeFormProps) {
   const form = useForm<TicketTypeFormValues>({
-    resolver: zodResolver(ticketTypeSchema),
+    resolver: zodResolver(ticketTypeSchema) as Resolver<TicketTypeFormValues>,
     defaultValues: {
       name: initialData?.name ?? "",
       description: initialData?.description ?? "",
@@ -62,6 +62,8 @@ export function TicketTypeForm({
       saleEnd: initialData?.saleEnd ?? "",
     },
   });
+
+  const watchedCurrency = useWatch({ control: form.control, name: "currency" });
 
   const [lineItems, setLineItems] = useState<LineItemFormData[]>(
     initialData?.lineItems?.map((li) => ({
@@ -222,7 +224,7 @@ export function TicketTypeForm({
           items={lineItems}
           onChange={setLineItems}
           taxRates={taxRates}
-          currency={form.watch("currency") || "EUR"}
+          currency={watchedCurrency || "EUR"}
         />
 
         <div className="flex justify-end gap-2">
