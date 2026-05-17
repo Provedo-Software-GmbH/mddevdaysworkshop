@@ -81,12 +81,10 @@ public static class InfrastructureServiceRegistration
                 options.ConnectionString = connectionString;
             });
         }
-        else
-        {
-            // In development without a connection string, Azure Monitor exporter is skipped.
-            // Traces and metrics are still collected via the OpenTelemetry SDK for local diagnostics.
-            services.AddOpenTelemetry().UseAzureMonitor();
-        }
+
+        // When no connection string is configured (e.g. local development without Application Insights),
+        // the Azure Monitor exporter is skipped. Traces and metrics are still collected via the
+        // OpenTelemetry SDK for local diagnostics (e.g. console exporter or OTLP).
 
         services.AddSingleton<ITelemetryService, TelemetryService>();
 
