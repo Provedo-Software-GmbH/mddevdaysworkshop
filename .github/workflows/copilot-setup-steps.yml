@@ -41,9 +41,9 @@ jobs:
           echo "$HOME/.bun/bin" >> $GITHUB_PATH
       - name: Restore .NET dependencies
         run: |
-          cd src
+          cd ${GITHUB_WORKSPACE}/src
           dotnet restore
       - name: Install frontend dependencies
         run: |
-          cd frontend
+          cd ${GITHUB_WORKSPACE}/frontend
           bun install --frozen-lockfile
