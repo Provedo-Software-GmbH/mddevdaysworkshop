@@ -67,11 +67,11 @@ Eine Event-Management-Plattform zum Erstellen von Entwicklerkonferenzen und zum 
 
 Jede\*r Teilnehmer\*in arbeitet an einem eigenständigen Feature:
 
-1. **Stripe Payment Integration** — Checkout-Flow, Webhooks, Zahlungsstatus
-2. **Invoice & Tax Calculation Engine** — Rechnungserstellung mit korrekter Steuerberechnung
+1. **Stripe Payment, Refunds & Cancellations** — Checkout-Flow, Webhooks, Stornierung, Rückerstattung, Voucher-Einlösung
+2. **Invoice, Tax Calculation & Cancellation Invoices** — Rechnungserstellung mit korrekter Steuerberechnung, Stornorechnungen
 3. **Customer Auth & Account Management** — Entra External ID, Gastbestellung, Bestellhistorie
-4. **Email Notifications** — Bestellbestätigung, Ticket-PDF, Event-Erinnerungen
-5. **Event Session & Speaker Management** — Programm, Vorträge, Speaker-Profile
-6. **Admin Dashboard & KPIs** — Verkaufszahlen, Auslastung, Echtzeit-Metriken
+4. **Ticket PDF, QR-Codes & Email Notifications** — PDF-Tickets mit QR-Code, Download-Seite, Bestellbestätigung, Event-Erinnerungen
+5. **Check-in & Ticket Scanning** — Check-in-Listen, QR-Scanner (Browser-Kamera), Teilnehmer-Suche, Check-in-Statistiken
+6. **Admin Dashboard, KPIs & Data Export** — Verkaufszahlen, Auslastung, Echtzeit-Metriken, CSV-Export (Teilnehmer, Bestellungen, Steuer)
 
 Siehe `docs/attendee-tasks/` für die detaillierten Aufgabenbeschreibungen.
