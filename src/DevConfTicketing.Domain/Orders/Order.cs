@@ -40,7 +40,7 @@ public class Order
 
     [Description("List of order positions containing individual tickets")]
     [JsonPropertyName("positions")]
-    public required List<OrderPosition> Positions { get; set; }
+    public List<OrderPosition> Positions { get; set; } = [];
 
     [Description("Total net amount before tax")]
     [JsonPropertyName("totalNet")]

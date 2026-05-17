@@ -32,7 +32,7 @@ public class OrderPosition
 
     [Description("Line items composing the price of this position")]
     [JsonPropertyName("lineItems")]
-    public required List<OrderLineItem> LineItems { get; set; }
+    public List<OrderLineItem> LineItems { get; set; } = [];
 
     [Description("Net amount for this position before tax")]
     [JsonPropertyName("positionNet")]
