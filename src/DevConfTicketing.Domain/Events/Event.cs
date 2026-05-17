@@ -40,15 +40,15 @@ public class Event
 
     [Description("URL of the event banner or logo image")]
     [JsonPropertyName("imageUrl")]
-    public string? ImageUrl { get; set; }
+    public Uri? ImageUrl { get; set; }
 
     [Description("URL of the event website")]
     [JsonPropertyName("websiteUrl")]
-    public string? WebsiteUrl { get; set; }
+    public Uri? WebsiteUrl { get; set; }
 
     [Description("Maximum number of attendees allowed")]
     [JsonPropertyName("maxAttendees")]
-    public int MaxAttendees { get; set; }
+    public int? MaxAttendees { get; set; }
 
     [Description("Timestamp when the event was created")]
     [JsonPropertyName("createdAt")]
