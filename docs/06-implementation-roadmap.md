@@ -5,7 +5,7 @@
 This is what needs to be implemented **before** the workshop.
 
 ### Step 1: Project Scaffolding
-- [ ] Create .NET 10 solution with 5 projects (Api, Domain, Application, Infrastructure, Tests)
+- [ ] Create .NET 11 solution with 5 projects (Api, Domain, Application, Infrastructure, Tests)
 - [ ] Create frontend with `bun create vite` + React + TypeScript
 - [ ] Initialize shadcn/ui with Tailwind CSS
 - [ ] Configure Vite proxy to backend

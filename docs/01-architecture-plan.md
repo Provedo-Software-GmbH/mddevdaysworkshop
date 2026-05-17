@@ -8,7 +8,7 @@
 │                                                           │
 │  ┌──────────────┐         ┌──────────────────────────┐   │
 │  │   Frontend    │         │        Backend API        │   │
-│  │  (nginx/SPA)  │────────▶│   .NET 10 Minimal APIs   │   │
+│  │  (nginx/SPA)  │────────▶│   .NET 11 Minimal APIs   │   │
 │  │  React + TS   │         │  + Managed Identity       │   │
 │  └──────────────┘         └──────────┬───────────────┘   │
 │                                       │                   │
@@ -33,7 +33,7 @@
               └────────────────┘
 ```
 
-## Backend Architecture (.NET 10)
+## Backend Architecture (.NET 11)
 
 ### Project Structure
 
@@ -376,7 +376,7 @@ Estimated monthly cost (low traffic): **~€7-20/month**
 # .github/workflows/ci.yml
 - Trigger: PR and push to main
 - Steps:
-  1. Build & test backend (.NET 10)
+  1. Build & test backend (.NET 11)
   2. Build & lint frontend (Bun)
   3. Run unit tests
   4. Run Playwright e2e tests (on PR only if label present)
