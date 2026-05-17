@@ -12,6 +12,7 @@ Implementiere eine vollständige Rechnungserstellung mit korrekter deutscher Ste
 - Das Order-Model enthält bereits `LineItems` mit Steuerinformationen
 - Eine grundlegende `TaxCalculationService` existiert bereits
 - Der **german-tax-calculation** Skill enthält alle relevanten Steuerregeln
+- Frontend OpenTelemetry ist vorkonfiguriert (`lib/telemetry.ts`): Nutze `startSpan()` / `withSpan()` für Custom Spans bei Rechnungsaktionen (z.B. PDF-Download, Rechnungsansicht)
 
 ## Aufgaben
 
@@ -108,3 +109,4 @@ Implementiere eine vollständige Rechnungserstellung mit korrekter deutscher Ste
 - [ ] Unit Tests für TaxCalculationService mit verschiedenen Szenarien
 - [ ] Unit Tests für Invoice-Nummern-Generierung
 - [ ] 🆕 Unit Tests für Stornorechnung-Erstellung
+- [ ] Frontend-Telemetry: Custom Spans für Rechnungsaktionen (z.B. `invoice.view`, `invoice.downloadPdf`) via `lib/telemetry.ts`

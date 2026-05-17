@@ -107,6 +107,12 @@ The backend Container App uses a **User-Assigned Managed Identity** to authentic
 - Auto-instrumentation for ASP.NET Core requests and outgoing HTTP calls
 - Service metadata: service.name, service.version, service.namespace as OpenTelemetry resource attributes
 - Custom metrics for business KPIs
+- **Frontend telemetry**: OpenTelemetry Web SDK (`@opentelemetry/sdk-trace-web`) with OTLP exporter
+  - Fetch auto-instrumentation propagates `traceparent` headers (W3C Trace Context) to the backend for **end-to-end distributed tracing** (browser → API → Cosmos DB shown as one transaction in App Insights)
+  - Document load performance spans
+  - Custom spans for page views, user interactions, and business events
+  - Frontend service identified as `DevConfTicketing.Frontend` in Application Insights
+  - Backend CORS allows `traceparent` header via `AllowAnyHeader()` — no extra config needed
 - Availability tests (optional)
 - Alert rules:
   - 5xx error rate > 1% → Email alert

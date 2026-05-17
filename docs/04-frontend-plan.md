@@ -199,6 +199,102 @@ export default defineConfig({
 });
 ```
 
+## Telemetry & Monitoring
+
+The frontend uses **OpenTelemetry** for distributed tracing, mirroring the backend's approach where Application Insights is a passive collector via the OpenTelemetry pipeline.
+
+### Packages
+
+- `@opentelemetry/api` — Core tracing API
+- `@opentelemetry/sdk-trace-web` — Web-optimized trace SDK
+- `@opentelemetry/resources` — Service metadata (name, version, namespace)
+- `@opentelemetry/semantic-conventions` — Standard attribute names
+- `@opentelemetry/instrumentation-fetch` — Auto-instruments all `fetch()` calls, propagates `traceparent` headers to the backend API
+- `@opentelemetry/instrumentation-document-load` — Records document load performance as spans
+- `@opentelemetry/exporter-trace-otlp-http` — Exports traces via OTLP/HTTP to a collector or Azure Monitor
+- `@opentelemetry/context-zone` — Zone.js-based async context propagation in the browser
+
+### Architecture
+
+```
+Browser (React SPA)
+  │
+  ├── OpenTelemetry Web SDK
+  │     ├── FetchInstrumentation   → auto-traces all API calls
+  │     ├── DocumentLoadInstrumentation → page load timing
+  │     └── Custom spans           → page views, form submits, user actions
+  │
+  └── OTLP Exporter → Application Insights (via OTLP endpoint or OTel Collector)
+```
+
+### Telemetry Service (`lib/telemetry.ts`)
+
+```typescript
+// Initialize once in main.tsx
+initTelemetry();
+
+// Track page views (call on route changes)
+trackPageView('eventDetail', '/events/123');
+
+// Custom spans for operations
+const span = startSpan('checkout.submit', { 'order.itemCount': 3 });
+try { /* ... */ } finally { span.end(); }
+
+// Wrap async operations
+const result = await withSpan('loadEvents', async (span) => {
+  span.setAttribute('filter.status', 'published');
+  return api.get<Event[]>('/events');
+});
+```
+
+### Configuration
+
+| Env Variable | Purpose | Default |
+|---|---|---|
+| `VITE_OTLP_ENDPOINT` | OTLP collector URL (e.g., Application Insights ingestion endpoint) | Not set (traces created but not exported) |
+| `VITE_APP_VERSION` | App version for service metadata | `0.0.0` |
+
+### End-to-End Distributed Tracing (Frontend → Backend → Cosmos DB)
+
+The frontend and backend share a single distributed trace for each user action:
+
+1. **Frontend** starts a trace (e.g., user clicks "Buy Tickets")
+2. **FetchInstrumentation** automatically injects a `traceparent` header (W3C Trace Context) into every `fetch()` call to the backend API
+3. **Backend** (ASP.NET Core + OpenTelemetry) automatically reads the `traceparent` header and continues the same trace
+4. **Cosmos DB operations** are recorded as child spans within the same trace
+5. **Application Insights** correlates all spans into a single end-to-end transaction view
+
+```
+Browser                          Backend API                    Cosmos DB
+  │                                │                              │
+  ├─ [span: page.view]            │                              │
+  ├─ [span: HTTP GET /api/v1/...] │                              │
+  │   traceparent: 00-{traceId}-{spanId}-01                      │
+  │ ─────────────────────────────▶ │                              │
+  │                                ├─ [span: GET /api/v1/...]    │
+  │                                ├─ [span: cosmos.GetItems]    │
+  │                                │ ─────────────────────────▶  │
+  │                                │ ◀─────────────────────────  │
+  │ ◀───────────────────────────── │                              │
+```
+
+**Requirements for this to work:**
+- CORS must allow the `traceparent` header — the backend's CORS config uses `AllowAnyHeader()` ✅
+- `FetchInstrumentation` must include the backend URL in `propagateTraceHeaderCorsUrls` ✅
+- Backend OpenTelemetry must be configured with `.WithTracing()` — ASP.NET Core auto-reads `traceparent` ✅
+
+### What's Auto-Instrumented
+
+- All `fetch()` calls to the backend API — with `traceparent` header propagation for end-to-end distributed traces
+- Document load performance (DOM content loaded, page load timing)
+
+### What Needs Manual Instrumentation
+
+- Page view tracking (call `trackPageView()` on React Router route changes)
+- Form submissions and user interactions (`startSpan()` or `withSpan()`)
+- Error tracking in error boundaries (`trackError()`)
+- Business events (e.g., "add to cart", "checkout started")
+
 ## Docker (Production)
 
 ```dockerfile

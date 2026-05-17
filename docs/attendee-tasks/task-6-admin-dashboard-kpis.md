@@ -10,6 +10,7 @@ Implementiere ein Admin-Dashboard mit Echtzeit-Verkaufszahlen, Auslastungsmetrik
 
 - Application Insights ist bereits im Backend integriert (via OpenTelemetry SDK mit Azure Monitor Exporter)
 - Der `TelemetryService` existiert mit `System.Diagnostics.Activity` (Tracing) und `System.Diagnostics.Metrics` (Custom Metrics)
+- Frontend OpenTelemetry ist vorkonfiguriert (`lib/telemetry.ts`): `fetch()` Calls senden automatisch `traceparent` Header für End-to-End Distributed Tracing (Browser → API → Cosmos DB in einer Transaktion sichtbar in App Insights). Nutze `startSpan()` / `withSpan()` für Dashboard-Aktionen
 - shadcn/ui `chart` Komponente (Recharts-basiert) ist vorinstalliert
 - Admin-Layout mit Sidebar ist vorgebaut
 
@@ -149,3 +150,4 @@ Implementiere ein Admin-Dashboard mit Echtzeit-Verkaufszahlen, Auslastungsmetrik
 - [ ] Unit Tests für MetricsService Berechnungen
 - [ ] Unit Tests für CSV-Export Formatierung
 - [ ] E2E Test für Dashboard-Seite
+- [ ] Frontend-Telemetry: Custom Spans für Dashboard-Aktionen (z.B. `dashboard.loadMetrics`, `dashboard.exportCsv`) und Page Views via `lib/telemetry.ts`

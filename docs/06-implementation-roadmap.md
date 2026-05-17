@@ -45,7 +45,7 @@ This is what needs to be implemented **before** the workshop.
 - [ ] Middleware (exception handling, correlation ID)
 - [ ] Health check
 - [ ] OpenAPI / Swagger
-- [ ] CORS configuration
+- [ ] CORS configuration (must allow `traceparent` header for end-to-end distributed tracing with the frontend)
 - [ ] Telemetry in middleware — request duration histogram, request counter with status code/endpoint tags, exception tracking in error-handling middleware
 
 ### Step 6: Frontend — Base Setup
@@ -53,6 +53,9 @@ This is what needs to be implemented **before** the workshop.
 - [ ] TanStack Query provider
 - [ ] API client (`lib/api.ts`)
 - [ ] Auth stub (`lib/auth.ts`)
+- [ ] OpenTelemetry telemetry service (`lib/telemetry.ts`) — distributed tracing, fetch auto-instrumentation with `traceparent` header propagation (W3C Trace Context), document load spans, custom span helpers
+- [ ] Telemetry initialization in `main.tsx`
+- [ ] End-to-end distributed tracing verified: frontend `traceparent` → backend continues trace → Cosmos DB spans in same trace
 - [ ] Public layout (header, footer, nav)
 - [ ] Admin layout (sidebar, content area)
 - [ ] shadcn/ui components installed
@@ -61,6 +64,7 @@ This is what needs to be implemented **before** the workshop.
 - [ ] Event listing page (`/`)
 - [ ] Event detail page (`/events/:id`)
 - [ ] Ticket selection page (`/events/:id/tickets`)
+- [ ] Page view telemetry on route changes (`trackPageView`)
 
 ### Step 8: Frontend — Admin Pages
 - [ ] Event management list (`/admin/events`)
@@ -69,6 +73,7 @@ This is what needs to be implemented **before** the workshop.
 - [ ] Ticket type management (`/admin/events/:id/ticket-types`)
 - [ ] Tax rate management (`/admin/tax-rates`)
 - [ ] Order list (`/admin/events/:id/orders`)
+- [ ] Telemetry spans for form submissions and admin actions
 
 ### Step 9: Frontend — Shared Components
 - [ ] DataTable with sorting & pagination
@@ -76,7 +81,7 @@ This is what needs to be implemented **before** the workshop.
 - [ ] TicketTypeCard, TicketTypeForm, TicketSelector
 - [ ] LineItemEditor (dynamic form)
 - [ ] CurrencyDisplay, TaxBreakdown
-- [ ] LoadingSpinner, ErrorBoundary, EmptyState, ConfirmDialog
+- [ ] LoadingSpinner, ErrorBoundary (with `trackError` telemetry), EmptyState, ConfirmDialog
 
 ### Step 10: Tests (Examples)
 - [ ] Event creation validation tests
