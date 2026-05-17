@@ -1,24 +1,49 @@
-# Copilot Cloud Agent Setup Steps
-# This file configures the environment for GitHub Copilot coding agent
+name: "Copilot Setup Steps"
 
-setup:
-  - name: Install .NET 11 SDK
-    uses: actions/setup-dotnet@v5
-    with:
-      dotnet-version: 11.0.x
-      dotnet-quality: preview
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
 
-  - name: Install Bun
-    run: |
-      curl -fsSL https://bun.sh/install | bash
-      echo "$HOME/.bun/bin" >> $GITHUB_PATH
-
-  - name: Restore .NET dependencies
-    run: |
-      cd src
-      dotnet restore
-
-  - name: Install frontend dependencies
-    run: |
-      cd frontend
-      bun install --frozen-lockfile
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: read
+      contents: read
+      issues: write
+      actions: write
+      artifact-metadata: write
+      checks: write
+      deployments: write
+      id-token: write
+      models: read
+      pull-requests: write
+      security-events: write
+      discussions: write
+      attestations: write
+      pages: write
+      repository-projects: write
+      statuses: write
+    steps:
+      - name: Install NET11 Preview
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '11.0.x'
+          dotnet-quality: 'preview'
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> $GITHUB_PATH
+      - name: Restore .NET dependencies
+        run: |
+          cd src
+          dotnet restore
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          bun install --frozen-lockfile
