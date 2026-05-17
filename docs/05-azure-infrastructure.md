@@ -22,7 +22,7 @@ The backend Container App uses a **User-Assigned Managed Identity** to authentic
 - **Cosmos DB** — RBAC role: `Cosmos DB Built-in Data Contributor`
 - **Key Vault** — Access policy or RBAC role: `Key Vault Secrets User`
 - **Application Insights** — Connection via managed identity (no instrumentation key in config)
-- **Microsoft Graph API** — App Registration with application permissions (see Email section)
+- **Microsoft Graph API** — `Mail.Send` application permission assigned directly to the managed identity (no App Registration client secret needed)
 
 > **No connection strings or passwords are stored as Container App env vars or secrets.** All secrets are accessed via the ASP.NET Key Vault configuration provider at startup.
 
@@ -131,10 +131,7 @@ builder.Configuration.AddAzureKeyVault(
 - `Stripe--PublishableKey`
 - `Stripe--WebhookSecret`
 - `CosmosDb--AccountEndpoint` (only the endpoint URL, auth via managed identity)
-- `GraphApi--TenantId`
-- `GraphApi--ClientId`
-- `GraphApi--ClientSecret` (for Graph API app registration)
-- `GraphApi--SenderEmail` (shared mailbox or user for sending)
+- `GraphApi--SenderEmail` (shared mailbox or user for sending, e.g. `tickets@devconf-ticketing.de`)
 
 ### Container Registry — Existing (Reuse)
 
@@ -150,17 +147,17 @@ builder.Configuration.AddAzureKeyVault(
 
 | Resource                          | Configuration                            |
 | --------------------------------- | ---------------------------------------- |
-| **Microsoft Graph API**           | Application permissions (`Mail.Send`)    |
-| App Registration (Graph Email)    | Single tenant, client credentials flow   |
+| **Microsoft Graph API**           | Application permission (`Mail.Send`) via Managed Identity |
 
 **Cost**: Free (included in Microsoft 365 / Entra ID licensing).
 
 **How it works**:
-- A dedicated **App Registration** with `Mail.Send` application permission (admin-consented)
-- Backend authenticates using **client credentials flow** (TenantId + ClientId + ClientSecret from Key Vault)
+- The `Mail.Send` application permission is granted directly to the **User-Assigned Managed Identity** (via Microsoft Graph `appRoleAssignment`) — no App Registration client secret needed
+- Backend authenticates using `DefaultAzureCredential` (same managed identity used for all Azure services)
 - Sends emails via `POST /v1.0/users/{sender}/sendMail` endpoint
 - Sender is a shared mailbox (e.g., `tickets@devconf-ticketing.de`) or a licensed user
 - Supports HTML emails with attachments (ticket PDFs)
+- **No client secrets anywhere** — fully managed identity based
 
 **Advantages over Azure Communication Services**:
 - No additional Azure resource to provision
