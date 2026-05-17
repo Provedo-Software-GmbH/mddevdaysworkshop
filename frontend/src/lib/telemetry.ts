@@ -13,6 +13,10 @@ const SERVICE_NAMESPACE = 'devconf-ticketing';
 
 let tracerInstance: Tracer | null = null;
 
+function escapeRegExp(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 /**
  * Initialize OpenTelemetry for the frontend.
  * Configures distributed tracing with fetch auto-instrumentation and document load metrics.
@@ -52,13 +56,16 @@ export function initTelemetry(): void {
 
   // Auto-instrument all fetch() calls — propagates trace context to the backend API
   // and records spans for every HTTP request.
+  const escapedOrigin = escapeRegExp(window.location.origin);
+  const apiUrl = import.meta.env.VITE_API_URL as string | undefined;
+
   registerInstrumentations({
     instrumentations: [
       new FetchInstrumentation({
         // Only propagate trace headers to our own API to avoid CORS issues with third-party APIs
         propagateTraceHeaderCorsUrls: [
-          new RegExp(`${window.location.origin}/api/.*`),
-          new RegExp(import.meta.env.VITE_API_URL ?? '/api'),
+          new RegExp(`^${escapedOrigin}/api/.*`),
+          ...(apiUrl ? [new RegExp(`^${escapeRegExp(apiUrl)}`)] : []),
         ],
         clearTimingResources: true,
       }),
