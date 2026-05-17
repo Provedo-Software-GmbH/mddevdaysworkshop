@@ -56,12 +56,13 @@ All models annotated with `[Description]` and `[JsonPropertyName]` attributes.
 - [x] CORS configuration (must allow `traceparent` header for end-to-end distributed tracing with the frontend)
 - [x] Frontend telemetry proxy endpoint (`POST /api/v1/telemetry`) — accepts OTLP/HTTP JSON traces from the browser and re-exports via the backend's OpenTelemetry pipeline (no auth keys in the browser)
 - [x] Telemetry in middleware — request duration histogram, request counter with status code/endpoint tags, exception tracking in error-handling middleware
+- [x] Admin authentication (Entra ID) — `Microsoft.Identity.Web` JWT Bearer validation, `AdminPolicy` and `EventManagerPolicy` authorization policies, admin write endpoints protected with `RequireAuthorization("AdminPolicy")`, GET endpoints remain public
 
 ### Step 6: Frontend — Base Setup ✅
 - [x] React Router configuration
 - [x] TanStack Query provider
 - [x] API client (`lib/api.ts`) — generic fetch wrapper with auth-token injection for admin routes
-- [x] Auth stub (`lib/auth.tsx`) — `AuthProvider`, `useAuth()` hook, `ProtectedRoute` component (stub for MSAL drop-in replacement)
+- [x] Admin authentication (`lib/auth.tsx`, `lib/msalConfig.ts`) — `@azure/msal-react` + `@azure/msal-browser` for Entra ID login, `AuthProvider` wraps `MsalProvider` when configured (`VITE_AZURE_AD_CLIENT_ID`), falls back to dev-mode mock user; `useAuth()` hook, `ProtectedRoute` component, automatic Bearer token injection via API client
 - [x] OpenTelemetry telemetry service (`lib/telemetry.ts`) — distributed tracing, fetch auto-instrumentation with `traceparent` header propagation (W3C Trace Context), document load spans, custom span helpers. Uses OTLP/HTTP (not gRPC) — browser-compatible. Traces exported via backend proxy (`POST /api/v1/telemetry`) to avoid exposing auth keys in the browser.
 - [x] Telemetry initialization in `main.tsx`
 - [x] End-to-end distributed tracing wired: frontend `traceparent` → backend continues trace → Cosmos DB spans in same trace (runtime verification requires deployed infrastructure)

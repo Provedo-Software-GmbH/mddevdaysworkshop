@@ -5,6 +5,8 @@
     "": {
       "name": "frontend",
       "dependencies": {
+        "@azure/msal-browser": "^5.10.1",
+        "@azure/msal-react": "^5.4.1",
         "@hookform/resolvers": "^5.2.2",
         "@opentelemetry/api": "^1.9.1",
         "@opentelemetry/context-zone": "^2.7.1",
@@ -62,6 +64,12 @@
     "@asamuzakjp/generational-cache": ["@asamuzakjp/generational-cache@1.0.1", "", {}, "sha512-wajfB8KqzMCN2KGNFdLkReeHncd0AslUSrvHVvvYWuU8ghncRJoA50kT3zP9MVL0+9g4/67H+cdvBskj9THPzg=="],
 
     "@asamuzakjp/nwsapi": ["@asamuzakjp/nwsapi@2.3.9", "", {}, "sha512-n8GuYSrI9bF7FFZ/SjhwevlHc8xaVlb/7HmHelnc/PZXBD2ZR49NnN9sMMuDdEGPeeRQ5d0hqlSlEpgCX3Wl0Q=="],
+
+    "@azure/msal-browser": ["@azure/msal-browser@5.10.1", "", { "dependencies": { "@azure/msal-common": "16.6.1" } }, "sha512-hTbvOi9Ko2Jvn+G/fSmjzHf9WbNcf/o3epMtbeGx/pMwMrVAbi6OgCJVeCfsAb8IybSRpaCSc4EDRlYAhgngUQ=="],
+
+    "@azure/msal-common": ["@azure/msal-common@16.6.1", "", {}, "sha512-VxKdEtUwDuLD0F1hOQP7kye0YadZxFJfv37Em440geEf/w9uggKnHpRrqwZJOdxmPUOdhZ9kyRtKuAJW8wUcRg=="],
+
+    "@azure/msal-react": ["@azure/msal-react@5.4.1", "", { "peerDependencies": { "@azure/msal-browser": "^5.10.1", "react": "^16.8.0 || ^17 || ^18 || ^19.2.1" } }, "sha512-Io/Yu/UzLcv14+M9ZilzCQLHrVxDfj27/7X/T4NhuP3+sySabRpKpx8BUmYQOms0pQ0PLzTcYmLzTJt7Tg8YSA=="],
 
     "@babel/code-frame": ["@babel/code-frame@7.29.0", "", { "dependencies": { "@babel/helper-validator-identifier": "^7.28.5", "js-tokens": "^4.0.0", "picocolors": "^1.1.1" } }, "sha512-9NhCeYjq9+3uxgdtp20LSiJXJvN0FeCtNGpJxuMFZ1Kv3cWUNb6DOhJwUvcVCzKGR66cw4njwM6hrJLqgOwbcw=="],
 
