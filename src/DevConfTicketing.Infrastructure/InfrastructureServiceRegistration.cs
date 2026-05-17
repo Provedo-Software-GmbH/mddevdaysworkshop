@@ -47,8 +47,9 @@ public static class InfrastructureServiceRegistration
         services.AddSingleton(sp =>
         {
             var cosmosClient = sp.GetRequiredService<CosmosClient>();
+            var telemetry = sp.GetRequiredService<ITelemetryService>();
             var logger = sp.GetRequiredService<ILogger<CosmosDbService>>();
-            return new CosmosDbService(cosmosClient, databaseName, logger);
+            return new CosmosDbService(cosmosClient, databaseName, telemetry, logger);
         });
 
         // Repositories
