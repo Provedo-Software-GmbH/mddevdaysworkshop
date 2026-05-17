@@ -57,6 +57,8 @@ public class TicketType
     public required string Currency { get; set; }     // "EUR"
     public int AvailableQuantity { get; set; }
     public int SoldQuantity { get; set; }
+    public int MaxPerOrder { get; set; } = 10;        // 🆕 Max tickets per order (pretix-inspired)
+    public bool ShowRemainingQuantity { get; set; }    // 🆕 Show "Only X left!" (pretix-inspired)
     public DateTimeOffset? SaleStart { get; set; }
     public DateTimeOffset? SaleEnd { get; set; }
     public required List<LineItemTemplate> LineItems { get; set; } // Tax-relevant breakdown
@@ -89,27 +91,46 @@ public class TaxRate
 }
 ```
 
-### Order (skeleton)
+### Order (skeleton — 🆕 upgraded with pretix-inspired features)
 
 ```csharp
-// Order.cs — Customer order
+// Order.cs — Customer order (supports multiple ticket types per order)
 public class Order
 {
     public required string Id { get; init; }
+    public required string OrderCode { get; init; }   // 🆕 Human-readable code (e.g. "MDDD-A7K2")
     public required string EventId { get; init; }
-    public required string TicketTypeId { get; init; }
-    public required int Quantity { get; set; }
     public required string CustomerEmail { get; set; }
     public string? CustomerName { get; set; }
     public string? CustomerId { get; set; }           // Null for guest checkout
+    public string? VoucherCode { get; set; }          // 🆕 Applied voucher code
     public OrderStatus Status { get; set; } = OrderStatus.Pending;
-    public required List<OrderLineItem> LineItems { get; set; }
+    public required List<OrderPosition> Positions { get; set; }  // 🆕 Multi-position orders
     public required decimal TotalNet { get; set; }
     public required decimal TotalTax { get; set; }
     public required decimal TotalGross { get; set; }
+    public required decimal DiscountAmount { get; set; }  // 🆕 Voucher discount
     public required string Currency { get; set; }
     public DateTimeOffset CreatedAt { get; init; }
     public DateTimeOffset UpdatedAt { get; set; }
+    public DateTimeOffset? CancellationDate { get; set; }  // 🆕 When cancelled
+}
+
+// OrderPosition.cs — 🆕 Each position = one ticket (pretix-inspired)
+public class OrderPosition
+{
+    public required int Index { get; init; }            // Position index within order
+    public required string TicketTypeId { get; init; }
+    public required string TicketTypeName { get; init; } // Denormalized
+    public required string TicketSecret { get; init; }   // 🆕 Cryptographic secret for QR code
+    public string? AttendeeName { get; set; }            // 🆕 Per-ticket attendee info
+    public string? AttendeeEmail { get; set; }           // 🆕 Per-ticket attendee info
+    public required List<OrderLineItem> LineItems { get; set; }
+    public required decimal PositionNet { get; set; }
+    public required decimal PositionTax { get; set; }
+    public required decimal PositionGross { get; set; }
+    public DateTimeOffset? CheckedInAt { get; set; }     // 🆕 Check-in timestamp
+    public string? CheckedInBy { get; set; }             // 🆕 Staff user ID
 }
 
 // OrderLineItem.cs
@@ -129,6 +150,29 @@ public class OrderLineItem
 public enum OrderStatus { Pending, PaymentProcessing, Paid, Cancelled, Refunded }
 ```
 
+### Voucher (🆕 pre-built, pretix-inspired)
+
+```csharp
+// Voucher.cs — Discount voucher
+public class Voucher
+{
+    public required string Id { get; init; }
+    public required string EventId { get; init; }
+    public required string Code { get; set; }            // e.g. "EARLYBIRD2026"
+    public required DiscountType DiscountType { get; set; } // Percentage, Absolute, FixedPrice
+    public required decimal DiscountValue { get; set; }  // e.g. 20 (for 20% or €20)
+    public int MaxUsages { get; set; } = 1;
+    public int UsedCount { get; set; }
+    public DateTimeOffset? ValidUntil { get; set; }
+    public List<string>? ApplicableTicketTypeIds { get; set; } // null = all
+    public bool IsActive { get; set; } = true;
+    public DateTimeOffset CreatedAt { get; init; }
+}
+
+// DiscountType.cs
+public enum DiscountType { Percentage, Absolute, FixedPrice }
+```
+
 ## 2. Infrastructure Layer (`DevConfTicketing.Infrastructure`)
 
 ### Cosmos DB Setup
@@ -145,6 +189,7 @@ public enum OrderStatus { Pending, PaymentProcessing, Paid, Cancelled, Refunded 
 - `TicketTypeRepository` — CRUD scoped to eventId
 - `TaxRateRepository` — CRUD + query by country
 - `OrderRepository` — Create + query by eventId, skeleton only
+- `VoucherRepository` — 🆕 CRUD scoped to eventId + validate by code
 
 ### Monitoring
 
@@ -161,8 +206,11 @@ Simple handler/service classes for business logic:
 - `GetEventsHandler` — Lists events with filtering
 - `PublishEventHandler` — Changes status to Published
 - `CreateTicketTypeHandler` — Creates ticket type with line item validation
-- `CreateOrderHandler` — Creates order with tax calculation from line items
+- `CreateOrderHandler` — Creates order with tax calculation from line items, generates OrderCode and TicketSecrets
 - Basic `TaxCalculationService` — Calculates totals from line item templates
+- `VoucherValidationService` — 🆕 Validates voucher codes and calculates discounts
+- `OrderCodeGenerator` — 🆕 Generates human-readable order codes (e.g. "MDDD-A7K2")
+- `TicketSecretGenerator` — 🆕 Generates cryptographic secrets for QR codes
 
 ## 4. API Layer (`DevConfTicketing.Api`)
 
@@ -176,6 +224,8 @@ app.MapGroup("/api/v1/events").MapEventEndpoints();
 app.MapGroup("/api/v1/events/{eventId}/ticket-types").MapTicketTypeEndpoints();
 app.MapGroup("/api/v1/tax-rates").MapTaxRateEndpoints();
 app.MapGroup("/api/v1/events/{eventId}/orders").MapOrderEndpoints();
+app.MapGroup("/api/v1/events/{eventId}/vouchers").MapVoucherEndpoints();  // 🆕
+app.MapGroup("/api/v1/vouchers").MapVoucherValidationEndpoints();         // 🆕
 ```
 
 ### Middleware

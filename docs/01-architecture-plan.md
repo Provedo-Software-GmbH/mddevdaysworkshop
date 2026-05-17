@@ -46,7 +46,7 @@ src/
 │   │   ├── InvoiceEndpoints.cs     # 🔨 Attendee 2
 │   │   ├── AuthEndpoints.cs        # 🔨 Attendee 3
 │   │   ├── NotificationEndpoints.cs# 🔨 Attendee 4
-│   │   ├── SessionEndpoints.cs     # 🔨 Attendee 5
+│   │   ├── CheckInEndpoints.cs     # 🔨 Attendee 5
 │   │   └── DashboardEndpoints.cs   # 🔨 Attendee 6
 │   ├── Middleware/
 │   │   ├── ExceptionHandlingMiddleware.cs
@@ -75,9 +75,11 @@ src/
 │   ├── Customers/                  # 🔨 Attendee 3
 │   │   ├── Customer.cs
 │   │   └── CustomerType.cs
-│   ├── Sessions/                   # 🔨 Attendee 5
-│   │   ├── Session.cs
-│   │   └── Speaker.cs
+│   ├── CheckIn/                    # 🔨 Attendee 5
+│   │   ├── CheckInList.cs
+│   │   └── CheckInRecord.cs
+│   ├── Vouchers/                   # Pre-built
+│   │   └── Voucher.cs
 │   └── Metrics/                    # 🔨 Attendee 6
 │       └── SalesMetric.cs
 │
@@ -90,8 +92,10 @@ src/
 │   │       ├── TicketTypeRepository.cs
 │   │       ├── TaxRateRepository.cs
 │   │       ├── OrderRepository.cs
+│   │       ├── VoucherRepository.cs     # Pre-built
 │   │       ├── CustomerRepository.cs    # 🔨 Attendee 3
-│   │       └── SessionRepository.cs     # 🔨 Attendee 5
+│   │       ├── CheckInRepository.cs     # 🔨 Attendee 5
+│   │       └── CheckInListRepository.cs # 🔨 Attendee 5
 │   ├── Stripe/                     # 🔨 Attendee 1
 │   │   ├── StripePaymentService.cs
 │   │   └── StripeWebhookHandler.cs
@@ -119,9 +123,10 @@ src/
 │   ├── Payments/                   # 🔨 Attendee 1
 │   │   └── PaymentService.cs
 │   ├── Notifications/              # 🔨 Attendee 4
-│   │   └── NotificationService.cs
-│   ├── Sessions/                   # 🔨 Attendee 5
-│   │   └── SessionService.cs
+│   │   ├── NotificationService.cs
+│   │   └── TicketPdfService.cs     # 🔨 Attendee 4 (PDF ticket generation)
+│   ├── CheckIn/                    # 🔨 Attendee 5
+│   │   └── CheckInService.cs
 │   └── Dashboard/                  # 🔨 Attendee 6
 │       └── MetricsService.cs
 │
@@ -148,7 +153,9 @@ src/
 | `tax-rates`        | `/countryCode`     | Tax rate definitions                 |
 | `orders`           | `/eventId`         | Orders (partitioned by event)        |
 | `customers`        | `/id`              | Customer profiles                    |
-| `sessions`         | `/eventId`         | Sessions/talks per event             |
+| `vouchers`         | `/eventId`         | Discount vouchers per event          |
+| `checkin-lists`    | `/eventId`         | Check-in list definitions per event  |
+| `checkin-records`  | `/eventId`         | Check-in scan records per event      |
 | `invoices`         | `/orderId`         | Invoices per order                   |
 
 ### API Design
@@ -176,6 +183,13 @@ GET    /api/v1/tax-rates
 POST   /api/v1/tax-rates
 PUT    /api/v1/tax-rates/{id}
 
+# Vouchers (pre-built)
+GET    /api/v1/events/{eventId}/vouchers
+POST   /api/v1/events/{eventId}/vouchers
+PUT    /api/v1/events/{eventId}/vouchers/{id}
+DELETE /api/v1/events/{eventId}/vouchers/{id}
+POST   /api/v1/vouchers/validate
+
 # Orders (pre-built skeleton, attendees extend)
 POST   /api/v1/events/{eventId}/orders
 GET    /api/v1/events/{eventId}/orders
@@ -185,11 +199,14 @@ GET    /api/v1/orders/{id}
 POST   /api/v1/orders/{id}/checkout
 POST   /api/v1/webhooks/stripe
 GET    /api/v1/orders/{id}/payment-status
+POST   /api/v1/orders/{id}/cancel
+POST   /api/v1/orders/{id}/refund
 
 # Invoices — 🔨 Attendee 2
 GET    /api/v1/orders/{id}/invoice
 POST   /api/v1/orders/{id}/invoice/generate
 GET    /api/v1/orders/{id}/invoice/pdf
+POST   /api/v1/orders/{id}/invoice/cancel
 
 # Auth / Customers — 🔨 Attendee 3
 POST   /api/v1/auth/guest-checkout
@@ -201,18 +218,26 @@ GET    /api/v1/customers/me/orders
 POST   /api/v1/orders/{id}/send-confirmation
 POST   /api/v1/events/{id}/send-reminder
 GET    /api/v1/notifications/templates
+GET    /api/v1/orders/{id}/tickets/pdf
+GET    /api/v1/orders/{id}/positions/{posId}/ticket/pdf
 
-# Sessions & Speakers — 🔨 Attendee 5
-GET    /api/v1/events/{eventId}/sessions
-POST   /api/v1/events/{eventId}/sessions
-PUT    /api/v1/events/{eventId}/sessions/{id}
-GET    /api/v1/events/{eventId}/speakers
-POST   /api/v1/events/{eventId}/speakers
+# Check-in & Scanning — 🔨 Attendee 5
+GET    /api/v1/events/{eventId}/checkin-lists
+POST   /api/v1/events/{eventId}/checkin-lists
+PUT    /api/v1/events/{eventId}/checkin-lists/{id}
+POST   /api/v1/events/{eventId}/checkin/redeem
+GET    /api/v1/events/{eventId}/checkin/search
+POST   /api/v1/events/{eventId}/checkin/{recordId}/annul
+GET    /api/v1/events/{eventId}/checkin/stats
+GET    /api/v1/events/{eventId}/checkin/export
 
-# Dashboard & KPIs — 🔨 Attendee 6
+# Dashboard, KPIs & Export — 🔨 Attendee 6
 GET    /api/v1/dashboard/events/{eventId}/sales
 GET    /api/v1/dashboard/events/{eventId}/revenue
 GET    /api/v1/dashboard/overview
+GET    /api/v1/events/{eventId}/export/attendees
+GET    /api/v1/events/{eventId}/export/orders
+GET    /api/v1/events/{eventId}/export/tax-report
 ```
 
 ## Frontend Architecture
@@ -240,7 +265,7 @@ frontend/
 │   │   │   ├── [id].tsx         # Public event detail
 │   │   │   └── [id]/
 │   │   │       ├── tickets.tsx  # Ticket selection → checkout
-│   │   │       └── sessions.tsx # 🔨 Attendee 5
+│   │   │       └── checkin.tsx # 🔨 Attendee 5 (public check-in status)
 │   │   ├── checkout/
 │   │   │   ├── index.tsx        # 🔨 Attendee 1 (Stripe)
 │   │   │   ├── success.tsx      # 🔨 Attendee 1
@@ -258,7 +283,9 @@ frontend/
 │   │       │       ├── edit.tsx         # Edit event (pre-built)
 │   │       │       ├── ticket-types.tsx # Manage ticket types (pre-built)
 │   │       │       ├── orders.tsx       # View orders (pre-built skeleton)
-│   │       │       └── sessions.tsx     # 🔨 Attendee 5
+│   │       │       ├── checkin.tsx     # 🔨 Attendee 5 (check-in lists)
+│   │       │       ├── scan.tsx       # 🔨 Attendee 5 (QR scanner)
+│   │       │       └── export.tsx     # 🔨 Attendee 6 (data export)
 │   │       ├── tax-rates.tsx    # Tax rate management (pre-built)
 │   │       ├── invoices/        # 🔨 Attendee 2
 │   │       ├── customers/       # 🔨 Attendee 3
