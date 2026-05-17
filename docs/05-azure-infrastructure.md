@@ -100,7 +100,12 @@ The backend Container App uses a **User-Assigned Managed Identity** to authentic
 **Cost**: Free for up to 5 GB/month of log data. Easily sufficient for this app.
 
 **Configuration**:
-- Connection string stored in Key Vault, loaded via ASP.NET Key Vault config provider
+- OpenTelemetry SDK with Azure Monitor exporter (`Azure.Monitor.OpenTelemetry.AspNetCore`) replaces the legacy Application Insights SDK
+- Application Insights connection string stored in Key Vault, loaded via ASP.NET Key Vault config provider
+- `System.Diagnostics.Activity` for distributed tracing, `System.Diagnostics.Metrics` for custom metrics
+- `ActivitySource("DevConfTicketing")` and `Meter("DevConfTicketing")` registered as listeners in the OpenTelemetry pipeline
+- Auto-instrumentation for ASP.NET Core requests and outgoing HTTP calls
+- Service metadata: service.name, service.version, service.namespace as OpenTelemetry resource attributes
 - Custom metrics for business KPIs
 - Availability tests (optional)
 - Alert rules:

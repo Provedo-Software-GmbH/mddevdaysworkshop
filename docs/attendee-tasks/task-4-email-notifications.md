@@ -10,7 +10,7 @@ Implementiere PDF-Ticket-Generierung mit QR-Codes für Check-in sowie E-Mail-Ben
 
 - Orders werden bereits erstellt und haben einen Status
 - Keine E-Mail-Funktionalität ist bisher implementiert
-- Application Insights ist für Monitoring bereits konfiguriert
+- Application Insights ist für Monitoring bereits konfiguriert (via OpenTelemetry SDK mit Azure Monitor Exporter)
 
 ## Aufgaben
 
@@ -26,7 +26,7 @@ Implementiere PDF-Ticket-Generierung mit QR-Codes für Check-in sowie E-Mail-Ben
    - Template-basierte E-Mails (HTML + Plain-Text)
    - Anhänge unterstützt (Ticket-PDFs)
    - Retry-Logik bei Fehler (mit Polly oder ähnlich)
-   - Telemetry für gesendete/fehlgeschlagene E-Mails
+   - Telemetry für gesendete/fehlgeschlagene E-Mails (via `ITelemetryService` — Activity-based tracing + Metrics)
 
 2. **Email Templates** (`Infrastructure/Email/EmailTemplates/`):
    - `OrderConfirmationTemplate` — Bestellbestätigung mit:

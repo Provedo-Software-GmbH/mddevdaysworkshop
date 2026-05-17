@@ -193,9 +193,14 @@ public enum DiscountType { Percentage, Absolute, FixedPrice }
 
 ### Monitoring
 
-- `TelemetryService` wrapping Application Insights TelemetryClient
+- `TelemetryService` using `System.Diagnostics.Activity` (distributed tracing) and `System.Diagnostics.Metrics` (custom metrics)
+- OpenTelemetry SDK with Azure Monitor exporter (`Azure.Monitor.OpenTelemetry.AspNetCore`) — replaces the legacy Application Insights SDK
+- `ActivitySource("DevConfTicketing")` for custom spans, `Meter("DevConfTicketing")` for custom metrics
+- Application Insights is a passive collector via the Azure Monitor OpenTelemetry exporter
+- Auto-instrumentation for ASP.NET Core requests and outgoing HTTP calls via OpenTelemetry
+- Service metadata enrichment (service.name, service.version, service.namespace)
 - Custom metrics: `EventCreated`, `OrderCreated`, `TicketTypeSold`
-- Request telemetry with custom dimensions (eventId, ticketTypeId)
+- Request tracing with custom tags (eventId, ticketTypeId)
 
 ## 3. Application Layer (`DevConfTicketing.Application`)
 

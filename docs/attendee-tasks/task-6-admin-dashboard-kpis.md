@@ -2,14 +2,14 @@
 
 ## Übersicht
 
-Implementiere ein Admin-Dashboard mit Echtzeit-Verkaufszahlen, Auslastungsmetriken und Business-KPIs. Zusätzlich: CSV/Excel-Export von Teilnehmerlisten und Bestellungen für die Buchhaltung. Nutze Application Insights Custom Metrics für das Backend und Recharts/shadcn Charts für das Frontend.
+Implementiere ein Admin-Dashboard mit Echtzeit-Verkaufszahlen, Auslastungsmetriken und Business-KPIs. Zusätzlich: CSV/Excel-Export von Teilnehmerlisten und Bestellungen für die Buchhaltung. Nutze OpenTelemetry Custom Metrics (`System.Diagnostics.Metrics`) für das Backend und Recharts/shadcn Charts für das Frontend.
 
 > **Inspiriert von pretix**: pretix bietet umfangreiche Exporter (CSV/XLSX für Orders, Teilnehmer, Steuerberichte, Check-in-Listen) und ein Statistics-Dashboard. Wir implementieren die wichtigsten Exporte + Dashboard.
 
 ## Kontext
 
-- Application Insights ist bereits im Backend integriert
-- Der `TelemetryService` existiert mit grundlegenden Custom Events
+- Application Insights ist bereits im Backend integriert (via OpenTelemetry SDK mit Azure Monitor Exporter)
+- Der `TelemetryService` existiert mit `System.Diagnostics.Activity` (Tracing) und `System.Diagnostics.Metrics` (Custom Metrics)
 - shadcn/ui `chart` Komponente (Recharts-basiert) ist vorinstalliert
 - Admin-Layout mit Sidebar ist vorgebaut
 
@@ -46,11 +46,11 @@ Implementiere ein Admin-Dashboard mit Echtzeit-Verkaufszahlen, Auslastungsmetrik
    - `GET /api/v1/dashboard/events/{eventId}/trend` — Verkaufstrend (Zeitreihe)
    - `GET /api/v1/dashboard/tax-summary` — Steuer-Übersicht für Buchhaltung
 
-4. **Application Insights Custom Metrics erweitern**:
-   - `TicketSold` Metrik mit Dimensionen (EventId, TicketTypeId, Amount)
-   - `OrderCreated` Metrik mit Dimensionen (EventId, PaymentMethod, Amount)
-   - `CheckoutStarted` / `CheckoutCompleted` für Conversion Tracking
-   - `PageViewed` Custom Event (EventId, Page)
+4. **OpenTelemetry Custom Metrics erweitern** (via `ITelemetryService`):
+   - `TicketSold` Metrik mit Tags (EventId, TicketTypeId, Amount) — via `IncrementCounter` / `RecordHistogram`
+   - `OrderCreated` Metrik mit Tags (EventId, PaymentMethod, Amount)
+   - `CheckoutStarted` / `CheckoutCompleted` für Conversion Tracking — via `TrackEvent`
+   - `PageViewed` Custom Event (EventId, Page) — via `TrackEvent`
 
 5. **Aggregation**:
    - Cosmos DB Queries für aggregierte Daten
@@ -142,7 +142,7 @@ Implementiere ein Admin-Dashboard mit Echtzeit-Verkaufszahlen, Auslastungsmetrik
 - [ ] Steuer-Zusammenfassung für Buchhaltung verfügbar
 - [ ] Zeitraum-Filter funktioniert
 - [ ] Responsive Design für alle Charts
-- [ ] Application Insights Custom Metrics werden emittiert
+- [ ] OpenTelemetry Custom Metrics werden emittiert (via `ITelemetryService.IncrementCounter` / `RecordHistogram`)
 - [ ] 🆕 CSV-Export: Teilnehmerliste mit Check-in-Status
 - [ ] 🆕 CSV-Export: Bestellübersicht mit Zahlungsstatus
 - [ ] 🆕 CSV-Export: Steuerbericht gruppiert nach Steuersatz

@@ -28,7 +28,7 @@ Eine Event-Management-Plattform zum Erstellen von Entwicklerkonferenzen und zum 
 - **Stripe-Integration**: Bezahlung über Stripe Checkout
 - **Gast-Checkout & Kundenkonten**: Kauf ohne Registrierung möglich, optional Konto via Entra External Identities
 - **Admin-Backend**: Geschützt via Entra ID (App Registration)
-- **Monitoring & KPIs**: Application Insights, Log Analytics, Dashboards
+- **Monitoring & KPIs**: OpenTelemetry with Azure Monitor exporter, Application Insights, Log Analytics
 
 ## Tech Stack
 
@@ -39,7 +39,7 @@ Eine Event-Management-Plattform zum Erstellen von Entwicklerkonferenzen und zum 
 | Auth (Admin)| Microsoft Entra ID (App Registration)      |
 | Auth (Customer) | Microsoft Entra External Identities    |
 | Payments    | Stripe (Test Mode)                         |
-| Monitoring  | Azure Application Insights, Log Analytics  |
+| Monitoring  | OpenTelemetry SDK, Azure Monitor exporter, Application Insights, Log Analytics |
 | Hosting     | Azure Container Apps (serverless)          |
 | CI/CD       | GitHub Actions                             |
 | Containers  | Dockerfiles (Backend: .NET, Frontend: nginx)|
@@ -57,7 +57,7 @@ Eine Event-Management-Plattform zum Erstellen von Entwicklerkonferenzen und zum 
 - Frontend: Layout, Routing, shadcn/ui Setup
 - Frontend: Event-Listing & Event-Detail Seiten
 - Frontend: Admin-Layout mit Navigation
-- Application Insights Integration (Backend)
+- Application Insights Integration (OpenTelemetry-based, using Activity & Metrics)
 - Dockerfiles (Backend + Frontend)
 - GitHub Actions CI Pipeline (Build + Test)
 - Copilot Setup Steps, Custom Agents & Skills
