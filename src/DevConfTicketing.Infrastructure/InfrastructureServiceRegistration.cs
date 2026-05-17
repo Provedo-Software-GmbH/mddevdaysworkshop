@@ -55,7 +55,7 @@ public static class InfrastructureServiceRegistration
         services.AddSingleton<IOrderRepository, OrderRepository>();
         services.AddSingleton<IVoucherRepository, VoucherRepository>();
 
-        // Application Insights
+        // Telemetry (Activity-based — Application Insights collects automatically via AddApplicationInsightsTelemetry)
         services.AddApplicationInsightsTelemetry();
         services.AddSingleton<ITelemetryService, TelemetryService>();
 
