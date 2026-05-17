@@ -70,11 +70,11 @@ All models annotated with `[Description]` and `[JsonPropertyName]` attributes.
 - [x] Admin layout (sidebar, content area) with `useAuth()` integration
 - [x] shadcn/ui components installed
 
-### Step 7: Frontend — Public Pages
-- [ ] Event listing page (`/`)
-- [ ] Event detail page (`/events/:id`)
-- [ ] Ticket selection page (`/events/:id/tickets`)
-- [ ] Page view telemetry on route changes (`trackPageView`)
+### Step 7: Frontend — Public Pages ✅
+- [x] Event listing page (`/`) — responsive grid of event cards with search by title, filter by upcoming/past (tabs), loading skeletons, empty states
+- [x] Event detail page (`/events/:id`) — hero section with image/gradient placeholder, info grid (dates, location, capacity), ticket type cards with pricing, "Buy Tickets" CTA
+- [x] Ticket selection page (`/events/:id/tickets`) — quantity selectors per ticket type (respects maxPerOrder & availability), line item breakdown with net/tax/gross, sticky order summary with grand total, "Proceed to Checkout" placeholder
+- [x] Page view telemetry on route changes (`trackPageView`) — tracked on all public pages via `useEffect` + `useLocation`
 
 ### Step 8: Frontend — Admin Pages
 - [ ] Event management list (`/admin/events`)
