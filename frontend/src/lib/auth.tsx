@@ -146,7 +146,7 @@ export function ProtectedRoute({ children }: PropsWithChildren) {
 // Legacy helpers (kept for backwards compatibility during migration)
 // ---------------------------------------------------------------------------
 
-/** @deprecated Use `useAuth().isAuthenticated` instead. */
+/** @deprecated Use `useAuth().isAuthenticated` instead. Always returns `true` in the stub. */
 export function isAuthenticated(): boolean {
   return true;
 }
