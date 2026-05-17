@@ -3,13 +3,10 @@
 
 setup:
   - name: Install .NET 11 SDK
-    run: |
-      curl -Lo dotnet.tar.gz https://aka.ms/dotnet/11.0/preview/dotnet-sdk-linux-x64.tar.gz
-      mkdir -p $HOME/dotnet
-      tar -C $HOME/dotnet -xf dotnet.tar.gz
-      rm dotnet.tar.gz
-      echo "DOTNET_ROOT=$HOME/dotnet" >> $GITHUB_ENV
-      echo "$HOME/dotnet" >> $GITHUB_PATH
+    uses: actions/setup-dotnet@v4
+    with:
+      dotnet-version: 11.0.x
+      dotnet-quality: preview
 
   - name: Install Bun
     run: |
