@@ -8,8 +8,11 @@ namespace DevConfTicketing.Infrastructure.Monitoring;
 
 public class TelemetryService : ITelemetryService
 {
-    private static readonly ActivitySource ActivitySource = new("DevConfTicketing");
-    private static readonly Meter Meter = new("DevConfTicketing");
+    public const string ActivitySourceName = "DevConfTicketing";
+    public const string MeterName = "DevConfTicketing";
+
+    private static readonly ActivitySource ActivitySource = new(ActivitySourceName);
+    private static readonly Meter Meter = new(MeterName);
 
     private readonly ConcurrentDictionary<string, Histogram<double>> _histograms = new();
     private readonly ConcurrentDictionary<string, Counter<long>> _counters = new();

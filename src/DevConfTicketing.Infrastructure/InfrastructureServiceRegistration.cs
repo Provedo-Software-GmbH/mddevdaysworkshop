@@ -1,4 +1,5 @@
 using Azure.Identity;
+using Azure.Monitor.OpenTelemetry.AspNetCore;
 
 using DevConfTicketing.Application.Interfaces;
 using DevConfTicketing.Infrastructure.Cosmos;
@@ -10,6 +11,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+
+using OpenTelemetry.Resources;
 
 namespace DevConfTicketing.Infrastructure;
 
@@ -55,8 +58,36 @@ public static class InfrastructureServiceRegistration
         services.AddSingleton<IOrderRepository, OrderRepository>();
         services.AddSingleton<IVoucherRepository, VoucherRepository>();
 
-        // Telemetry (Activity-based — Application Insights collects automatically via AddApplicationInsightsTelemetry)
-        services.AddApplicationInsightsTelemetry();
+        // OpenTelemetry with Azure Monitor exporter
+        // Uses System.Diagnostics.Activity for distributed tracing and System.Diagnostics.Metrics for metrics.
+        // Application Insights is a passive collector via the Azure Monitor exporter.
+        var connectionString = configuration["ApplicationInsights:ConnectionString"];
+
+        services.AddOpenTelemetry()
+            .ConfigureResource(resource => resource.AddService(
+                serviceName: "DevConfTicketing",
+                serviceVersion: typeof(InfrastructureServiceRegistration).Assembly
+                    .GetName().Version?.ToString() ?? "0.0.0",
+                serviceNamespace: "devconf-ticketing"))
+            .WithTracing(tracing => tracing
+                .AddSource(TelemetryService.ActivitySourceName))
+            .WithMetrics(metrics => metrics
+                .AddMeter(TelemetryService.MeterName));
+
+        if (!string.IsNullOrEmpty(connectionString))
+        {
+            services.AddOpenTelemetry().UseAzureMonitor(options =>
+            {
+                options.ConnectionString = connectionString;
+            });
+        }
+        else
+        {
+            // In development without a connection string, Azure Monitor exporter is skipped.
+            // Traces and metrics are still collected via the OpenTelemetry SDK for local diagnostics.
+            services.AddOpenTelemetry().UseAzureMonitor();
+        }
+
         services.AddSingleton<ITelemetryService, TelemetryService>();
 
         return services;

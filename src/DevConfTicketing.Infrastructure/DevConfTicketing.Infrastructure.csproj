@@ -2,8 +2,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Cosmos" />
-    <PackageReference Include="Azure.Identity" />
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" />
+    <PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" />
   </ItemGroup>
 
   <ItemGroup>
