@@ -7,7 +7,6 @@ import type { TicketType, LineItemTemplate } from "@/types/event";
 import { useEvent } from "@/hooks/useEvents";
 import { useTicketTypes } from "@/hooks/useTicketTypes";
 import { trackPageView } from "@/lib/telemetry";
-import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import {
