@@ -45,17 +45,17 @@ All models annotated with `[Description]` and `[JsonPropertyName]` attributes.
 - [x] Basic `CreateOrderHandler`
 - [x] Telemetry in all handlers — `StartSpan` for each operation, `IncrementCounter` for business events (e.g. `event.created`, `order.created`), `TrackException` on failures
 
-### Step 5: API Layer
-- [ ] Event endpoints (full CRUD)
-- [ ] TicketType endpoints (full CRUD)
-- [ ] TaxRate endpoints (full CRUD)
-- [ ] Order endpoints (skeleton)
-- [ ] Middleware (exception handling, correlation ID)
-- [ ] Health check
-- [ ] OpenAPI / Swagger
-- [ ] CORS configuration (must allow `traceparent` header for end-to-end distributed tracing with the frontend)
-- [ ] Frontend telemetry proxy endpoint (`POST /api/v1/telemetry`) — accepts OTLP/HTTP JSON traces from the browser and re-exports via the backend's OpenTelemetry pipeline (no auth keys in the browser)
-- [ ] Telemetry in middleware — request duration histogram, request counter with status code/endpoint tags, exception tracking in error-handling middleware
+### Step 5: API Layer ✅
+- [x] Event endpoints (full CRUD)
+- [x] TicketType endpoints (full CRUD)
+- [x] TaxRate endpoints (full CRUD)
+- [x] Order endpoints (skeleton)
+- [x] Middleware (exception handling, correlation ID)
+- [x] Health check
+- [x] OpenAPI / Swagger
+- [x] CORS configuration (must allow `traceparent` header for end-to-end distributed tracing with the frontend)
+- [x] Frontend telemetry proxy endpoint (`POST /api/v1/telemetry`) — accepts OTLP/HTTP JSON traces from the browser and re-exports via the backend's OpenTelemetry pipeline (no auth keys in the browser)
+- [x] Telemetry in middleware — request duration histogram, request counter with status code/endpoint tags, exception tracking in error-handling middleware
 
 ### Step 6: Frontend — Base Setup
 - [ ] React Router configuration
