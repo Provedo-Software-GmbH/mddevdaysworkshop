@@ -19,8 +19,8 @@ Implementiere PDF-Ticket-Generierung mit QR-Codes für Check-in sowie E-Mail-Ben
 1. **Email Service** (`Infrastructure/Email/GraphEmailService.cs`):
    - Abstraktion: `IEmailService` Interface
    - Implementation mit **Microsoft Graph API** (`Microsoft.Graph` SDK):
-     - Client Credentials Flow (TenantId + ClientId + ClientSecret aus Key Vault)
-     - `Mail.Send` Application Permission (Admin-consented)
+     - Authentifizierung via **Managed Identity** (`DefaultAzureCredential`) — keine Client Secrets
+     - `Mail.Send` Application Permission (direkt der Managed Identity zugewiesen, admin-consented)
      - Sendet über `graphClient.Users[senderEmail].SendMail.PostAsync(...)`
    - Sender: Shared Mailbox (z.B. `tickets@devconf-ticketing.de`)
    - Template-basierte E-Mails (HTML + Plain-Text)
@@ -109,8 +109,9 @@ Implementiere PDF-Ticket-Generierung mit QR-Codes für Check-in sowie E-Mail-Ben
 ### Hinweise
 
 - **Microsoft Graph API** mit `Mail.Send` Application Permission (kein delegierter Zugriff nötig)
-- Graph SDK: `Microsoft.Graph` NuGet Package + `Azure.Identity` für `ClientSecretCredential`
-- Credentials (TenantId, ClientId, ClientSecret) werden aus Key Vault geladen (ASP.NET Key Vault config provider)
+- Graph SDK: `Microsoft.Graph` NuGet Package + `Azure.Identity` für `DefaultAzureCredential` (Managed Identity)
+- Keine Client Secrets nötig — die Managed Identity hat die `Mail.Send` Application Permission direkt zugewiesen
+- Sender-E-Mail-Adresse wird aus der Konfiguration geladen (Key Vault: `GraphApi--SenderEmail`)
 - QR-Codes können mit einer einfachen Library generiert werden (z.B. `QRCoder` für .NET)
 - E-Mails sollten HTML und Plain-Text Version haben
 - Responsive E-Mail Templates (MJML oder inline CSS)
