@@ -39,11 +39,13 @@ jobs:
         run: |
           curl -fsSL https://bun.sh/install | bash
           echo "$HOME/.bun/bin" >> $GITHUB_PATH
+      - name: Checkout repository
+        uses: actions/checkout@v6
       - name: Restore .NET dependencies
         run: |
-          cd ${GITHUB_WORKSPACE}/src
+          cd src
           dotnet restore
       - name: Install frontend dependencies
         run: |
-          cd ${GITHUB_WORKSPACE}/frontend
+          cd frontend
           bun install --frozen-lockfile
