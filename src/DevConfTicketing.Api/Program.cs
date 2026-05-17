@@ -1,8 +1,12 @@
+using DevConfTicketing.Infrastructure;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
+
+builder.Services.AddInfrastructureServices(builder.Configuration, builder.Environment);
 
 builder.Services.AddCors(options =>
 {
@@ -15,6 +19,12 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// Initialize Cosmos DB containers in development
+if (app.Environment.IsDevelopment())
+{
+    await app.Services.InitializeCosmosDbAsync();
+}
 
 // Middleware pipeline
 if (app.Environment.IsDevelopment())
