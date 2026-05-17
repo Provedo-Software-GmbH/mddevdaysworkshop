@@ -180,7 +180,7 @@ public enum DiscountType { Percentage, Absolute, FixedPrice }
 - Generic `CosmosDbService` with CRUD operations
 - Container configuration with partition keys
 - Typed repository classes per entity
-- Connection string from configuration / Key Vault
+- **Authentication via Managed Identity** (no connection string) — uses `DefaultAzureCredential` + Cosmos DB account endpoint URL
 - Automatic container creation in development
 
 ### Pre-built Repositories
@@ -238,7 +238,27 @@ app.MapGroup("/api/v1/vouchers").MapVoucherValidationEndpoints();         // �
 
 - `appsettings.json` — Structure with placeholders
 - `appsettings.Development.json` — Local development values (Cosmos emulator)
-- Environment variable support for all secrets
+- **Azure Key Vault configuration provider** (`Azure.Extensions.AspNetCore.Configuration.Secrets`) — loads all secrets at startup via managed identity
+- **No environment variables for secrets** — all sensitive config comes from Key Vault
+- `DefaultAzureCredential` used for all Azure service authentication (Managed Identity in production, Azure CLI/VS in development)
+
+```csharp
+// Program.cs — Key Vault + Managed Identity setup
+var keyVaultUrl = builder.Configuration["KeyVault:Url"];
+if (!string.IsNullOrEmpty(keyVaultUrl))
+{
+    builder.Configuration.AddAzureKeyVault(
+        new Uri(keyVaultUrl),
+        new DefaultAzureCredential());
+}
+
+// Cosmos DB with Managed Identity
+builder.Services.AddSingleton(sp =>
+{
+    var endpoint = builder.Configuration["CosmosDb:AccountEndpoint"];
+    return new CosmosClient(endpoint, new DefaultAzureCredential());
+});
+```
 
 ### Swagger / OpenAPI
 

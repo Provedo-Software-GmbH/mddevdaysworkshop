@@ -3,11 +3,28 @@
 ## Resource Overview
 
 All resources optimized for cost efficiency using serverless/flexible SKUs.
+**All Azure service access uses Managed Identities** — no connection strings or passwords in configuration.
 
 ### Resource Group
 
 - **Name**: `rg-devconf-ticketing-{env}` (e.g., `rg-devconf-ticketing-prod`)
 - **Region**: `West Europe` (Frankfurt/Netherlands)
+
+### Identity — Managed Identities
+
+| Resource                        | Configuration                    |
+| ------------------------------- | -------------------------------- |
+| User-Assigned Managed Identity  | Shared by backend Container App  |
+
+**Cost**: Free.
+
+The backend Container App uses a **User-Assigned Managed Identity** to authenticate to all Azure services:
+- **Cosmos DB** — RBAC role: `Cosmos DB Built-in Data Contributor`
+- **Key Vault** — Access policy or RBAC role: `Key Vault Secrets User`
+- **Application Insights** — Connection via managed identity (no instrumentation key in config)
+- **Microsoft Graph API** — App Registration with application permissions (see Email section)
+
+> **No connection strings or passwords are stored as Container App env vars or secrets.** All secrets are accessed via the ASP.NET Key Vault configuration provider at startup.
 
 ### Compute — Azure Container Apps
 
@@ -23,6 +40,8 @@ All resources optimized for cost efficiency using serverless/flexible SKUs.
 - Backend: Internal + External ingress (API accessible from frontend and externally for webhooks)
 - Frontend: External ingress only
 - Scaling rules: HTTP concurrent requests
+- **Managed Identity**: User-assigned managed identity attached to backend Container App
+- **Key Vault reference**: The backend uses `Azure.Extensions.AspNetCore.Configuration.Secrets` to load all config from Key Vault at startup (not Container App secrets/env vars)
 
 ### Database — Azure Cosmos DB
 
@@ -32,8 +51,11 @@ All resources optimized for cost efficiency using serverless/flexible SKUs.
 | API                         | NoSQL (Core SQL)                       |
 | Consistency                 | Session (default, good balance)        |
 | Backup                      | Continuous (7 days, free with serverless) |
+| **Authentication**          | **Microsoft Entra ID (Managed Identity)** — no connection string |
 
 **Cost**: ~€0-5/month for low traffic, scales with RU consumption.
+
+**Access**: The backend authenticates to Cosmos DB using its managed identity with the `Cosmos DB Built-in Data Contributor` RBAC role. No connection string needed.
 
 **Containers** (auto-created by app):
 - `events` (PK: `/id`)
@@ -41,7 +63,9 @@ All resources optimized for cost efficiency using serverless/flexible SKUs.
 - `tax-rates` (PK: `/countryCode`)
 - `orders` (PK: `/eventId`)
 - `customers` (PK: `/id`)
-- `sessions` (PK: `/eventId`)
+- `vouchers` (PK: `/eventId`)
+- `checkin-lists` (PK: `/eventId`)
+- `checkin-records` (PK: `/eventId`)
 - `invoices` (PK: `/orderId`)
 
 ### Authentication — Microsoft Entra ID
@@ -76,7 +100,7 @@ All resources optimized for cost efficiency using serverless/flexible SKUs.
 **Cost**: Free for up to 5 GB/month of log data. Easily sufficient for this app.
 
 **Configuration**:
-- Connection string injected via Container App secrets
+- Connection string stored in Key Vault, loaded via ASP.NET Key Vault config provider
 - Custom metrics for business KPIs
 - Availability tests (optional)
 - Alert rules:
@@ -89,32 +113,60 @@ All resources optimized for cost efficiency using serverless/flexible SKUs.
 | Resource              | Configuration              |
 | --------------------- | -------------------------- |
 | Azure Key Vault       | Standard tier              |
+| **Access**            | **Managed Identity (RBAC: Key Vault Secrets User)** |
 
 **Cost**: ~€0.03/10,000 operations. Negligible.
+
+**Access Pattern**: The backend uses the **ASP.NET Key Vault configuration provider** (`Azure.Extensions.AspNetCore.Configuration.Secrets`) to load secrets at startup. The managed identity authenticates to Key Vault — no access keys or connection strings needed.
+
+```csharp
+// Program.cs — Key Vault configuration
+builder.Configuration.AddAzureKeyVault(
+    new Uri("https://kv-devconf-ticketing.vault.azure.net/"),
+    new DefaultAzureCredential());
+```
 
 **Secrets stored**:
 - `Stripe--SecretKey`
 - `Stripe--PublishableKey`
 - `Stripe--WebhookSecret`
-- `CosmosDb--ConnectionString`
-- `AzureCommunicationServices--ConnectionString`
+- `CosmosDb--AccountEndpoint` (only the endpoint URL, auth via managed identity)
+- `GraphApi--TenantId`
+- `GraphApi--ClientId`
+- `GraphApi--ClientSecret` (for Graph API app registration)
+- `GraphApi--SenderEmail` (shared mailbox or user for sending)
 
-### Container Registry — Azure Container Registry
+### Container Registry — Existing (Reuse)
+
+> **Note**: We reuse an **existing Azure Container Registry** — no new ACR is provisioned.
 
 | Resource              | Configuration              |
 | --------------------- | -------------------------- |
-| Azure Container Registry | Basic tier              |
+| Azure Container Registry | **Existing** (already provisioned) |
 
-**Cost**: ~€4.50/month
+**Access**: The Container Apps Environment pulls images from the existing ACR. Authentication via managed identity or admin credentials (depending on existing ACR setup).
 
-### Email — Azure Communication Services (Optional)
+### Email — Microsoft Graph API
 
-| Resource                          | Configuration              |
-| --------------------------------- | -------------------------- |
-| Azure Communication Services      | Pay-as-you-go             |
-| Email Communication Service       | Free domain included       |
+| Resource                          | Configuration                            |
+| --------------------------------- | ---------------------------------------- |
+| **Microsoft Graph API**           | Application permissions (`Mail.Send`)    |
+| App Registration (Graph Email)    | Single tenant, client credentials flow   |
 
-**Cost**: First 1000 emails/month free, then ~€0.00025/email.
+**Cost**: Free (included in Microsoft 365 / Entra ID licensing).
+
+**How it works**:
+- A dedicated **App Registration** with `Mail.Send` application permission (admin-consented)
+- Backend authenticates using **client credentials flow** (TenantId + ClientId + ClientSecret from Key Vault)
+- Sends emails via `POST /v1.0/users/{sender}/sendMail` endpoint
+- Sender is a shared mailbox (e.g., `tickets@devconf-ticketing.de`) or a licensed user
+- Supports HTML emails with attachments (ticket PDFs)
+
+**Advantages over Azure Communication Services**:
+- No additional Azure resource to provision
+- Full control over sender identity (own domain)
+- Rich HTML email with attachments supported natively
+- Integrates with existing Microsoft 365 infrastructure
 
 ---
 
@@ -124,12 +176,13 @@ All resources optimized for cost efficiency using serverless/flexible SKUs.
 | -------------------------- | ---------------------------- |
 | Container Apps             | €5-15                        |
 | Cosmos DB (Serverless)     | €2-5                         |
-| Container Registry (Basic) | €4.50                        |
+| Container Registry         | €0 (existing, already paid)  |
 | Application Insights       | €0 (under 5 GB)             |
 | Key Vault                  | ~€0.03                       |
 | Entra External ID          | €0 (under 50k MAU)          |
-| Communication Services     | €0 (under 1000 emails)      |
-| **Total**                  | **~€12-25/month**            |
+| Graph API (Email)          | €0 (included in M365)       |
+| Managed Identity           | €0 (free)                    |
+| **Total**                  | **~€7-20/month**             |
 
 ---
 
@@ -138,26 +191,28 @@ All resources optimized for cost efficiency using serverless/flexible SKUs.
 ```
 GitHub Actions
     │
-    ├── Build Backend → Docker Image → ACR
-    ├── Build Frontend → Docker Image → ACR
+    ├── Build Backend → Docker Image → Existing ACR
+    ├── Build Frontend → Docker Image → Existing ACR
     │
     └── Deploy
-        ├── Container App (Backend) ← ACR Image
+        ├── Container App (Backend) ← ACR Image + Managed Identity
         ├── Container App (Frontend) ← ACR Image
-        └── Cosmos DB (auto-provision containers)
+        └── Cosmos DB (auto-provision containers, RBAC via Managed Identity)
 ```
 
 ### GitHub Actions Secrets Required
 
 ```
-AZURE_CREDENTIALS          # Service Principal JSON
-ACR_LOGIN_SERVER           # e.g., devconfticketingacr.azurecr.io
-ACR_USERNAME               # ACR admin username
+AZURE_CREDENTIALS          # Service Principal JSON (for deployment only)
+ACR_LOGIN_SERVER           # e.g., existingacr.azurecr.io (existing registry)
+ACR_USERNAME               # ACR admin username (or use managed identity for push)
 ACR_PASSWORD               # ACR admin password
-STRIPE_SECRET_KEY          # Stripe test/live secret key
+STRIPE_SECRET_KEY          # Stripe test/live secret key (stored in Key Vault, used for initial setup)
 STRIPE_PUBLISHABLE_KEY     # Stripe test/live publishable key
 STRIPE_WEBHOOK_SECRET      # Stripe webhook signing secret
 ```
+
+> **Note**: At runtime, the backend does NOT read secrets from env vars or GitHub Secrets. It reads them from **Azure Key Vault** via the ASP.NET configuration provider + managed identity.
 
 ### Infrastructure as Code
 
@@ -168,17 +223,17 @@ infra/
 ├── main.bicep                    # Main template
 ├── modules/
 │   ├── container-apps.bicep      # Container Apps Environment + Apps
-│   ├── cosmos-db.bicep           # Cosmos DB Account
-│   ├── container-registry.bicep  # ACR
-│   ├── key-vault.bicep           # Key Vault
+│   ├── cosmos-db.bicep           # Cosmos DB Account + RBAC assignments
+│   ├── key-vault.bicep           # Key Vault + access policies
 │   ├── monitoring.bicep          # App Insights + Log Analytics
-│   └── communication.bicep       # Communication Services
+│   ├── managed-identity.bicep    # User-Assigned Managed Identity + role assignments
+│   └── graph-app-registration.bicep # App Registration for Graph API (manual/script)
 └── parameters/
     ├── dev.bicepparam
     └── prod.bicepparam
 ```
 
-> **Note**: Bicep templates are NOT part of the workshop scope but should be created for production deployment afterwards.
+> **Note**: Bicep templates are NOT part of the workshop scope but should be created for production deployment afterwards. The ACR module is removed since we reuse an existing registry.
 
 ---
 

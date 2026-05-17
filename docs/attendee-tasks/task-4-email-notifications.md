@@ -2,7 +2,7 @@
 
 ## Übersicht
 
-Implementiere PDF-Ticket-Generierung mit QR-Codes für Check-in sowie E-Mail-Benachrichtigungen für Bestellbestätigungen, Ticket-Zustellung und Event-Erinnerungen. Nutze Azure Communication Services oder einen ähnlichen E-Mail-Provider.
+Implementiere PDF-Ticket-Generierung mit QR-Codes für Check-in sowie E-Mail-Benachrichtigungen für Bestellbestätigungen, Ticket-Zustellung und Event-Erinnerungen. Nutze die **Microsoft Graph API** mit Application Permissions (`Mail.Send`) zum Versenden von E-Mails.
 
 > **Inspiriert von pretix**: pretix hat ein komplettes Ticket-PDF-System mit individuellem QR-Code pro Position, Ticket-Download-Seiten und -APIs. Wir implementieren die Kernfeatures davon.
 
@@ -16,11 +16,16 @@ Implementiere PDF-Ticket-Generierung mit QR-Codes für Check-in sowie E-Mail-Ben
 
 ### Backend
 
-1. **Email Service** (`Infrastructure/Email/EmailService.cs`):
+1. **Email Service** (`Infrastructure/Email/GraphEmailService.cs`):
    - Abstraktion: `IEmailService` Interface
-   - Implementation mit Azure Communication Services (oder SendGrid als Alternative)
-   - Template-basierte E-Mails
-   - Retry-Logik bei Fehler
+   - Implementation mit **Microsoft Graph API** (`Microsoft.Graph` SDK):
+     - Client Credentials Flow (TenantId + ClientId + ClientSecret aus Key Vault)
+     - `Mail.Send` Application Permission (Admin-consented)
+     - Sendet über `graphClient.Users[senderEmail].SendMail.PostAsync(...)`
+   - Sender: Shared Mailbox (z.B. `tickets@devconf-ticketing.de`)
+   - Template-basierte E-Mails (HTML + Plain-Text)
+   - Anhänge unterstützt (Ticket-PDFs)
+   - Retry-Logik bei Fehler (mit Polly oder ähnlich)
    - Telemetry für gesendete/fehlgeschlagene E-Mails
 
 2. **Email Templates** (`Infrastructure/Email/EmailTemplates/`):
@@ -103,12 +108,15 @@ Implementiere PDF-Ticket-Generierung mit QR-Codes für Check-in sowie E-Mail-Ben
 
 ### Hinweise
 
-- Azure Communication Services hat ein kostenloses Kontingent
+- **Microsoft Graph API** mit `Mail.Send` Application Permission (kein delegierter Zugriff nötig)
+- Graph SDK: `Microsoft.Graph` NuGet Package + `Azure.Identity` für `ClientSecretCredential`
+- Credentials (TenantId, ClientId, ClientSecret) werden aus Key Vault geladen (ASP.NET Key Vault config provider)
 - QR-Codes können mit einer einfachen Library generiert werden (z.B. `QRCoder` für .NET)
 - E-Mails sollten HTML und Plain-Text Version haben
 - Responsive E-Mail Templates (MJML oder inline CSS)
 - E-Mail-Adressen validieren bevor gesendet wird
-- Rate Limiting für Massenversand beachten
+- Rate Limiting für Massenversand beachten (Graph API: 10.000 Emails/10min pro Mailbox)
+- Ticket-PDFs als Anhang an Bestätigungs-E-Mail senden
 
 ### Agents verwenden
 
