@@ -8,6 +8,9 @@
     <!-- API -->
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="11.0.0-preview.4.26230.115" />
 
+    <!-- Authentication -->
+    <PackageVersion Include="Microsoft.Identity.Web" Version="4.9.0" />
+
     <!-- Azure / Infrastructure -->
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.51.0" />
     <PackageVersion Include="Azure.Identity" Version="1.21.0" />

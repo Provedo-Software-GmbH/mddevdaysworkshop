@@ -61,7 +61,8 @@ public static class TaxRateEndpoints
         .WithTags("TaxRates")
         .WithDescription("Create a new tax rate")
         .Produces<TaxRate>(StatusCodes.Status201Created)
-        .ProducesValidationProblem();
+        .ProducesValidationProblem()
+        .RequireAuthorization("AdminPolicy");
 
         group.MapPut("/{countryCode}/{id}", async (string countryCode, string id, UpdateTaxRateRequest request, UpdateTaxRateHandler handler, CancellationToken ct) =>
         {
@@ -83,7 +84,8 @@ public static class TaxRateEndpoints
         .WithTags("TaxRates")
         .WithDescription("Update an existing tax rate")
         .Produces<TaxRate>()
-        .ProducesProblem(StatusCodes.Status404NotFound);
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .RequireAuthorization("AdminPolicy");
 
         return group;
     }

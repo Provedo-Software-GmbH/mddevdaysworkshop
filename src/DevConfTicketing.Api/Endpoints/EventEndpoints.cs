@@ -56,7 +56,8 @@ public static class EventEndpoints
         .WithTags("Events")
         .WithDescription("Create a new event")
         .Produces<Event>(StatusCodes.Status201Created)
-        .ProducesValidationProblem();
+        .ProducesValidationProblem()
+        .RequireAuthorization("AdminPolicy");
 
         group.MapPut("/{id}", async (string id, UpdateEventRequest request, UpdateEventHandler handler, CancellationToken ct) =>
         {
@@ -83,7 +84,8 @@ public static class EventEndpoints
         .WithTags("Events")
         .WithDescription("Update an existing event")
         .Produces<Event>()
-        .ProducesProblem(StatusCodes.Status404NotFound);
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .RequireAuthorization("AdminPolicy");
 
         group.MapPost("/{id}/publish", async (string id, PublishEventHandler handler, CancellationToken ct) =>
         {
@@ -95,7 +97,8 @@ public static class EventEndpoints
         .WithDescription("Publish a draft event")
         .Produces<Event>()
         .ProducesProblem(StatusCodes.Status404NotFound)
-        .ProducesProblem(StatusCodes.Status409Conflict);
+        .ProducesProblem(StatusCodes.Status409Conflict)
+        .RequireAuthorization("AdminPolicy");
 
         group.MapDelete("/{id}", async (string id, Application.Interfaces.IEventRepository repository, CancellationToken ct) =>
         {
@@ -105,7 +108,8 @@ public static class EventEndpoints
         .WithName("DeleteEvent")
         .WithTags("Events")
         .WithDescription("Delete an event")
-        .Produces(StatusCodes.Status204NoContent);
+        .Produces(StatusCodes.Status204NoContent)
+        .RequireAuthorization("AdminPolicy");
 
         return group;
     }
