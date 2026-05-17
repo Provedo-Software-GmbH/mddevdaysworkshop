@@ -29,7 +29,7 @@ export interface CreateEventData {
   websiteUrl?: string | null;
 }
 
-export interface UpdateEventData extends CreateEventData {}
+export type UpdateEventData = CreateEventData;
 
 export function useCreateEvent() {
   const queryClient = useQueryClient();

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Plus, Pencil } from "lucide-react";
@@ -52,7 +52,7 @@ export default function TaxRatesPage() {
   const [editTarget, setEditTarget] = useState<TaxRate | null>(null);
 
   const form = useForm<TaxRateFormValues>({
-    resolver: zodResolver(taxRateSchema),
+    resolver: zodResolver(taxRateSchema) as Resolver<TaxRateFormValues>,
     defaultValues: {
       countryCode: "DE",
       name: "",
