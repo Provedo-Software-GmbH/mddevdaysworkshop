@@ -8,6 +8,25 @@ This guide covers the manual steps required to deploy the DevConf Ticketing infr
 - An account with **Global Administrator** or **Privileged Role Administrator** for the Entra ID scripts
 - Access to the GitHub repository settings
 
+## Step 0: Clean Up Broken App Registration (one-time)
+
+If you previously ran the script and it failed with JSON errors, the app registration exists but has no roles or scopes. Delete it first so the script can recreate it cleanly:
+
+```powershell
+az login   # log in with an admin account
+
+# Find the broken app registration
+$BrokenAppId = az ad app list --display-name DevConfTicketing-API --query '[0].appId' -o tsv
+Write-Host "Found app: $BrokenAppId"
+
+# Delete it
+az ad app delete --id $BrokenAppId
+
+# Verify it's gone
+az ad app list --display-name DevConfTicketing-API --query '[].appId' -o tsv
+# (should return nothing)
+```
+
 ## Step 1: Run the Entra ID Setup Scripts
 
 The deployment service principal only has Azure resource permissions — it **cannot** create App Registrations or assign Graph API roles. These scripts must be run by an Entra ID admin.

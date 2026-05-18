@@ -70,12 +70,15 @@ else {
         principalId = $MiPrincipalId
         resourceId  = $GraphSpId
         appRoleId   = $MailSendRoleId
-    } | ConvertTo-Json -Compress
+    }
 
+    $BodyFile = [System.IO.Path]::GetTempFileName()
+    $Body | ConvertTo-Json -Depth 2 | Set-Content -Path $BodyFile -Encoding utf8
     az rest --method POST `
         --uri "https://graph.microsoft.com/v1.0/servicePrincipals/$MiPrincipalId/appRoleAssignments" `
         --headers 'Content-Type=application/json' `
-        --body $Body
+        --body "@$BodyFile"
+    Remove-Item $BodyFile
 
     Write-Host 'Mail.Send permission assigned successfully.'
 }
