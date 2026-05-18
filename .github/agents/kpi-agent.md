@@ -83,19 +83,14 @@ When analyzing a feature, produce a specification that includes:
 3. **Dashboard mockup description** — what cards, charts, or visualizations should display these KPIs
 4. **Alerting thresholds** — when should alerts fire (e.g., error rate > 5%, latency p99 > 2s)
 
-### Creating GitHub Issues
+### Implementation
 
-For each KPI specification, create two issues:
+For each KPI specification, implement the metrics directly or delegate to the appropriate agents:
 
-1. **Backend Issue**: "Implement {feature} metrics in backend"
-   - List each counter/histogram to add
-   - Specify which handlers need modification
-   - Include acceptance criteria as task lists
+1. **Backend metrics**: Delegate to `backend-api-agent` to add counters/histograms in the relevant handlers using `System.Diagnostics.Metrics`
+2. **Frontend metrics**: Delegate to `frontend-component-agent` to add dashboard components and client-side telemetry using `lib/telemetry.ts`
 
-2. **Frontend Issue**: "Add {feature} KPI dashboard components"
-   - List each visualization component to create
-   - Specify data sources (API endpoints or client-side metrics)
-   - Include accessibility requirements for charts
+Always implement the KPIs as part of the current task — do not create separate GitHub issues.
 
 ### Azure Monitor Integration
 
