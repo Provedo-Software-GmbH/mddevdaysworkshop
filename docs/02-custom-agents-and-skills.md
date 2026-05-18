@@ -248,39 +248,45 @@ steps:
 
 This gives the cloud agent **routing guidance** so it knows which agent to invoke for which type of task, even though it can already see all agents.
 
-### Should we have multiple `copilot-instructions.md` for frontend and backend?
+### Should we have multiple instruction files for frontend and backend?
 
-**Yes — this is supported and recommended for this project.** GitHub Copilot supports **one `copilot-instructions.md` per directory**, and the **nearest file in the directory tree takes precedence** (deepest wins). So the recommended structure is:
+**Yes — this is supported and recommended for this project.** According to the [official GitHub docs](https://docs.github.com/en/copilot/customizing-copilot/adding-repository-custom-instructions-for-github-copilot), GitHub Copilot supports **path-specific custom instructions** via `*.instructions.md` files in the `.github/instructions/` directory. Each file uses an `applyTo` frontmatter to specify which file paths the instructions apply to (using glob patterns).
+
+**Important**: Path-specific instructions do **not** replace the root `copilot-instructions.md` — they are **additive**. When Copilot works on a file matching a path-specific pattern, it uses **both** the root instructions and the matching path-specific instructions.
+
+The recommended structure is:
 
 ```
-.github/copilot-instructions.md      ← global (project-wide conventions, agent routing)
-src/copilot-instructions.md           ← backend-specific (.NET, C#, API patterns)
-frontend/copilot-instructions.md      ← frontend-specific (React, TypeScript, Tailwind)
+.github/copilot-instructions.md                    ← global (project-wide conventions, agent routing)
+.github/instructions/backend.instructions.md       ← backend-specific (.NET, C#, API patterns)
+                                                      applyTo: "src/**"
+.github/instructions/frontend.instructions.md      ← frontend-specific (React, TypeScript, Tailwind)
+                                                      applyTo: "frontend/**"
 ```
 
 This way:
 
 - The **root instructions** (`.github/copilot-instructions.md`) cover cross-cutting concerns: model annotations (`[Description]` + `[JsonPropertyName]`), code organization (one file per type), agent/skill routing, and shared conventions.
-- The **`src/copilot-instructions.md`** focuses on C# language features, .NET patterns, Cosmos DB repository conventions, telemetry via `System.Diagnostics.Activity`/`Metrics`, and backend-specific conventions. This is where most of the current root content should live.
-- The **`frontend/copilot-instructions.md`** focuses on React 19, TypeScript (strict, no `any`), Tailwind CSS, shadcn/ui, TanStack Query, Vitest + React Testing Library, and frontend telemetry via `lib/telemetry.ts`.
+- **`backend.instructions.md`** (applied to `src/**`) focuses on C# language features, .NET patterns, Cosmos DB repository conventions, telemetry via `System.Diagnostics.Activity`/`Metrics`, and backend-specific conventions. This is where most of the current root C# content has been moved.
+- **`frontend.instructions.md`** (applied to `frontend/**`) focuses on React 19, TypeScript (strict, no `any`), Tailwind CSS, shadcn/ui, TanStack Query, Vitest + React Testing Library, and frontend telemetry via `lib/telemetry.ts`.
 
-**Why this matters**: The current root `copilot-instructions.md` is heavily C#-focused, which isn't helpful when the Copilot cloud agent is working on frontend files. Splitting the instructions ensures each part of the codebase gets relevant guidance.
+**Why this matters**: The original root `copilot-instructions.md` was heavily C#-focused, which isn't helpful when the Copilot cloud agent is working on frontend files. Splitting the instructions ensures each part of the codebase gets relevant, additive guidance.
 
-### Should we reference agents in the sub-instructions?
+### Should we reference agents in the path-specific instructions?
 
-**Yes, but only the relevant ones.** Each sub-level `copilot-instructions.md` should reference the agents that apply to that area:
+**Yes, but only the relevant ones.** Each path-specific instruction file should reference the agents that apply to that area:
 
-- `src/copilot-instructions.md` → reference `backend-api-agent`, `testing-agent`, `kpi-agent`
-- `frontend/copilot-instructions.md` → reference `frontend-component-agent`, `testing-agent`, `e2e-testing-agent`, `kpi-agent`
+- `backend.instructions.md` → reference `backend-api-agent`, `testing-agent`, `kpi-agent`
+- `frontend.instructions.md` → reference `frontend-component-agent`, `testing-agent`, `e2e-testing-agent`, `kpi-agent`
 
-This keeps routing scoped — when the agent is working in `frontend/`, it sees frontend-relevant agents; when working in `src/`, it sees backend-relevant agents.
+This keeps routing scoped — when the agent is working on files in `frontend/`, it sees frontend-relevant agents; when working on files in `src/`, it sees backend-relevant agents.
 
-### Summary of recommended next steps
+### Summary of what was implemented
 
-1. **Slim down** `.github/copilot-instructions.md` to only global/cross-cutting concerns + agent routing
-2. **Create** `src/copilot-instructions.md` with backend-specific C# conventions (moved from root)
-3. **Create** `frontend/copilot-instructions.md` with frontend-specific React/TypeScript conventions
-4. Each sub-instruction file references only the agents relevant to that area
+1. ✅ **Slimmed down** `.github/copilot-instructions.md` to only global/cross-cutting concerns + agent routing
+2. ✅ **Created** `.github/instructions/backend.instructions.md` with `applyTo: "src/**"` and backend-specific C# conventions
+3. ✅ **Created** `.github/instructions/frontend.instructions.md` with `applyTo: "frontend/**"` and frontend-specific React/TypeScript conventions
+4. ✅ Each path-specific instruction file references only the agents relevant to that area
 
 ---
 
