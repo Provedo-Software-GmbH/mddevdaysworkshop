@@ -37,29 +37,31 @@ az ad app update --id "${APP_ID}" \
 
 # Define app roles (Admin and EventManager)
 echo "Configuring app roles..."
+ADMIN_ROLE_ID=$(uuidgen 2>/dev/null || cat /proc/sys/kernel/random/uuid)
+EVENT_MANAGER_ROLE_ID=$(uuidgen 2>/dev/null || cat /proc/sys/kernel/random/uuid)
 az ad app update --id "${APP_ID}" \
-  --app-roles '[
+  --app-roles "[
     {
-      "allowedMemberTypes": ["User"],
-      "description": "Full admin access to all DevConf Ticketing features",
-      "displayName": "Admin",
-      "isEnabled": true,
-      "value": "Admin",
-      "id": "'"$(uuidgen || cat /proc/sys/kernel/random/uuid)"'"
+      \"allowedMemberTypes\": [\"User\"],
+      \"description\": \"Full admin access to all DevConf Ticketing features\",
+      \"displayName\": \"Admin\",
+      \"isEnabled\": true,
+      \"value\": \"Admin\",
+      \"id\": \"${ADMIN_ROLE_ID}\"
     },
     {
-      "allowedMemberTypes": ["User"],
-      "description": "Can manage events, ticket types, and view orders",
-      "displayName": "EventManager",
-      "isEnabled": true,
-      "value": "EventManager",
-      "id": "'"$(uuidgen || cat /proc/sys/kernel/random/uuid)"'"
+      \"allowedMemberTypes\": [\"User\"],
+      \"description\": \"Can manage events, ticket types, and view orders\",
+      \"displayName\": \"EventManager\",
+      \"isEnabled\": true,
+      \"value\": \"EventManager\",
+      \"id\": \"${EVENT_MANAGER_ROLE_ID}\"
     }
-  ]'
+  ]"
 
 # Define API scope
 echo "Configuring API scope..."
-SCOPE_ID=$(uuidgen || cat /proc/sys/kernel/random/uuid)
+SCOPE_ID=$(uuidgen 2>/dev/null || cat /proc/sys/kernel/random/uuid)
 az ad app update --id "${APP_ID}" \
   --set "api={\"oauth2PermissionScopes\":[{\"adminConsentDescription\":\"Access DevConf Ticketing API as admin\",\"adminConsentDisplayName\":\"Access DevConf Ticketing API\",\"id\":\"${SCOPE_ID}\",\"isEnabled\":true,\"type\":\"Admin\",\"value\":\"access_as_admin\"}]}"
 

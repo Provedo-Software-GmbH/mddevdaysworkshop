@@ -166,6 +166,12 @@ resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
 resource frontendApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: frontendAppName
   location: location
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${managedIdentityId}': {}
+    }
+  }
   properties: {
     managedEnvironmentId: environment.id
     configuration: {
