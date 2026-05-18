@@ -73,7 +73,11 @@ az ad app update --id $AppId --app-roles "@$AppRolesFile"
 Remove-Item $AppRolesFile
 
 # Define API scope
+# NOTE: We look up the application object ID first so the Graph URI uses the
+#       simple /applications/{id} path. The OData form applications(appId='...')
+#       contains parentheses that Windows CMD interprets as special characters.
 Write-Host 'Configuring API scope...'
+$AppObjectId = az ad app show --id $AppId --query 'id' -o tsv
 $ScopeId = [guid]::NewGuid().ToString()
 
 $ApiPayload = @{
@@ -94,8 +98,7 @@ $ApiPayload = @{
 $ApiPayloadFile = [System.IO.Path]::GetTempFileName()
 $ApiPayload | ConvertTo-Json -Depth 4 | Set-Content -Path $ApiPayloadFile -Encoding utf8
 az rest --method PATCH `
-    --uri "https://graph.microsoft.com/v1.0/applications(appId='$AppId')" `
-    --headers 'Content-Type=application/json' `
+    --uri "https://graph.microsoft.com/v1.0/applications/$AppObjectId" `
     --body "@$ApiPayloadFile"
 Remove-Item $ApiPayloadFile
 
