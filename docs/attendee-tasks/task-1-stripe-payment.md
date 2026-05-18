@@ -100,3 +100,51 @@ Implementiere die komplette Zahlungsabwicklung mit Stripe inkl. Stornierung und 
 - [ ] Unit Tests für PaymentService (inkl. Refund-Szenarien)
 - [ ] E2E Test für den kompletten Checkout-Flow
 - [ ] Frontend-Telemetry: Custom Spans für Checkout-Flow (z.B. `checkout.start`, `checkout.success`, `checkout.cancel`) via `lib/telemetry.ts`
+
+Umsetzungsplan mit Parallelisierung für Aufgabe 1 (Stripe Payment, Refunds & Cancellations):
+
+Kickoff & Contract-Freeze (seriell, 1 Agent)
+Scope final festlegen (Checkout, Webhooks, Cancel/Refund, Voucher, Admin-Storno)
+API-Verträge fixieren:
+POST /orders/{id}/checkout
+POST /webhooks/stripe
+GET /orders/{id}/payment-status
+POST /orders/{id}/cancel
+POST /orders/{id}/refund
+POST /vouchers/validate
+Domain-Änderungen finalisieren (PaymentInfo, CancellationDate, Status-Transitions, Idempotenz-Eventspeicher)
+Done-Definition + Akzeptanzkriterien als gemeinsame Checkliste
+
+Wave 1 – Kernimplementierung parallel starten
+Stream A (backend-api-agent): Stripe Checkout Session + PaymentStatus Endpoint + Grundstruktur Stripe Service
+Stream B (backend-api-agent): Webhook-Handler (Signature Verify, checkout.session.completed|expired, Idempotenz)
+Stream C (frontend-component-agent): /checkout Seite (Order Summary, E-Mail, “Jetzt bezahlen”, Redirect-Flow)
+Stream D (frontend-component-agent): Ticket-Selector → Checkout-Flow verbinden
+Stream E (testing-agent): Testgerüst für PaymentService/Webhook-Idempotenz vorbereiten (Mocks, Testdaten, Szenarien)
+
+Wave 2 – Erweiterungen parallel
+Stream A2 (backend-api-agent): Cancel-/Refund-Endpunkte inkl. Validierungen (nur Paid stornierbar, Check-in Warnung)
+Stream B2 (backend-api-agent): charge.refunded Webhook + Status Refunded + CancellationDate-Pflege
+Stream C2 (frontend-component-agent): /checkout/success und /checkout/cancel Seiten
+Stream D2 (frontend-component-agent): Voucher-Eingabe im Checkout (Validate, Rabattanzeige, Preisupdate)
+Stream E2 (frontend-component-agent): Admin-Order-Detail: “Bestellung stornieren”, Confirm-Dialog, Statusanzeige
+
+Wave 3 – Qualität parallel
+Stream T1 (testing-agent): Unit-Tests für Checkout, Webhook-Events, Cancel/Refund, Voucher-Fälle
+Stream T2 (e2e-testing-agent): End-to-End Checkout-Flow (Start → Stripe Redirect-Flow → Success/Cancel)
+Stream T3 (frontend-component-agent): Telemetry-Spans (checkout.start|success|cancel, kritische User-Aktionen)
+
+Integration & Stabilisierung (seriell)
+Alle Streams integrieren, Konflikte auflösen, API/Frontend-Verträge validieren
+Vollständige Regression der Akzeptanzkriterien
+Fehlerfälle prüfen (ungültiger Voucher, abgelaufene Session, doppelte Webhook-Zustellung)
+Security-/Compliance-Check:
+keine Kartendatenverarbeitung
+Webhook-Signature immer validiert
+Idempotency Keys für Stripe Calls
+
+Abschluss (seriell)
+kpi-agent ausführen: KPIs/Metrics für Checkout Conversion, Payment Success Rate, Refund Rate, Cancellation Rate, Voucher Usage
+
+Finales Review gegen Task-Checkliste
+PR finalisieren mit klarer Mapping-Tabelle: Kriterium → Implementierung/Testnachweis
