@@ -21,6 +21,7 @@ MI_NAME="${1:-nrwdevconf_mi}"
 MI_RESOURCE_GROUP="${2:-nrwdevconf}"
 
 echo "=== Setting up Graph API permissions for Managed Identity: ${MI_NAME} ==="
+echo "Note: Pass managed identity name and resource group as arguments if different from defaults."
 
 # Get the managed identity's principal ID (object ID of its service principal)
 echo "Looking up managed identity..."
