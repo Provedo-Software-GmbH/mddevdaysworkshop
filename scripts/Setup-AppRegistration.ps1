@@ -22,7 +22,7 @@ $ApiIdentifierUri = 'api://devconf-ticketing'
 Write-Host "=== Setting up App Registration: $AppDisplayName ==="
 
 # Check if app registration already exists
-$ExistingAppId = az ad app list --display-name $AppDisplayName --query '[0].appId' -o tsv 2>$null
+$ExistingAppId = az ad app list --display-name $AppDisplayName --query '[0].appId' -o tsv 2>&1 | Where-Object { $_ -is [string] }
 
 if ($ExistingAppId -and $ExistingAppId -ne 'None') {
     Write-Host "App Registration already exists with appId: $ExistingAppId"
@@ -39,7 +39,7 @@ else {
 
 # Set identifier URI
 Write-Host "Setting identifier URI: $ApiIdentifierUri"
-az ad app update --id $AppId --identifier-uris $ApiIdentifierUri 2>$null
+az ad app update --id $AppId --identifier-uris $ApiIdentifierUri 2>&1 | Out-Null
 
 # Define app roles (Admin and EventManager)
 Write-Host 'Configuring app roles...'
@@ -81,11 +81,12 @@ Write-Host 'Adding Microsoft Graph User.Read permission...'
 # User.Read permission ID: e1fe6dd8-ba31-4d61-89e7-88639da4683d
 az ad app permission add --id $AppId `
     --api '00000003-0000-0000-c000-000000000000' `
-    --api-permissions 'e1fe6dd8-ba31-4d61-89e7-88639da4683d=Scope' 2>$null
+    --api-permissions 'e1fe6dd8-ba31-4d61-89e7-88639da4683d=Scope' 2>&1 | Out-Null
 
 # Ensure a service principal exists for the app
 Write-Host 'Ensuring service principal exists...'
-$spExists = az ad sp show --id $AppId 2>$null
+$spExists = $null
+try { $spExists = az ad sp show --id $AppId 2>&1 } catch { }
 if (-not $spExists) {
     az ad sp create --id $AppId
 }

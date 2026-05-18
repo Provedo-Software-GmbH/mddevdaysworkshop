@@ -59,7 +59,7 @@ Write-Host 'Checking for existing role assignment...'
 $Existing = az rest --method GET `
     --uri "https://graph.microsoft.com/v1.0/servicePrincipals/$MiPrincipalId/appRoleAssignments" `
     --query "value[?appRoleId=='$MailSendRoleId' && resourceId=='$GraphSpId'].id | [0]" `
-    -o tsv 2>$null
+    -o tsv 2>&1 | Where-Object { $_ -is [string] }
 
 if ($Existing -and $Existing -ne 'None') {
     Write-Host 'Mail.Send permission is already assigned to the managed identity.'
