@@ -91,6 +91,7 @@ public static class InfrastructureServiceRegistration
         // OpenTelemetry SDK for local diagnostics (e.g. console exporter or OTLP).
 
         services.AddSingleton<ITelemetryService, TelemetryService>();
+        services.AddTransient<SeedDataService>();
 
         return services;
     }
