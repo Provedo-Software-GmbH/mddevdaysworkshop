@@ -223,7 +223,10 @@ public class StripeWebhookHandler(
         }
 
         order.Status = OrderStatus.Refunded;
-        order.PaymentInfo!.RefundedAt = DateTimeOffset.UtcNow;
+        if (order.PaymentInfo is not null)
+        {
+            order.PaymentInfo.RefundedAt = DateTimeOffset.UtcNow;
+        }
         order.UpdatedAt = DateTimeOffset.UtcNow;
         await orderRepository.UpdateAsync(order, cancellationToken);
 
