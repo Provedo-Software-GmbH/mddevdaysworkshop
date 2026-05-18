@@ -1,0 +1,68 @@
+name: Deploy Infrastructure
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'infra/**'
+  workflow_dispatch:
+    inputs:
+      imageTag:
+        description: 'Image tag to deploy'
+        required: false
+        default: 'latest'
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy-infra
+  cancel-in-progress: false
+
+env:
+  AZURE_RESOURCE_GROUP: nrwdevconf
+  ACR_RESOURCE_GROUP: sia-consulting
+  ACR_NAME: siaconsulting
+
+jobs:
+  deploy:
+    name: Deploy Bicep Infrastructure
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy Bicep
+        uses: azure/arm-deploy@v2
+        with:
+          scope: resourcegroup
+          resourceGroupName: ${{ env.AZURE_RESOURCE_GROUP }}
+          template: infra/main.bicep
+          parameters: >-
+            environmentName=prod
+            location=germanywestcentral
+            containerAppsEnvironmentName=nrwdevconf-env
+            managedIdentityName=nrwdevconf_mi
+            keyVaultName=nrwdevconf
+            logAnalyticsWorkspaceName=nrwdevconflogs
+            acrName=${{ env.ACR_NAME }}
+            acrResourceGroup=${{ env.ACR_RESOURCE_GROUP }}
+            acrLoginServer=${{ env.ACR_NAME }}.azurecr.io
+            cosmosDbAccountName=devconf-ticketing-db
+            appInsightsName=devconf-ticketing-insights
+            backendAppName=devconf-ticketing-api
+            frontendAppName=devconf-ticketing-frontend
+            imageTag=${{ github.event.inputs.imageTag || 'latest' }}
+            entraIdTenantId=${{ secrets.AZURE_TENANT_ID }}
+            entraIdClientId=${{ secrets.ENTRA_ID_CLIENT_ID }}
+            entraIdAudience=api://devconf-ticketing
+          failOnStdErr: false

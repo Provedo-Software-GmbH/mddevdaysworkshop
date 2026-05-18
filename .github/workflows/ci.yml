@@ -8,10 +8,16 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+env:
+  ACR_LOGIN_SERVER: siaconsulting.azurecr.io
+  BACKEND_IMAGE: devconf-ticketing-api
+  FRONTEND_IMAGE: devconf-ticketing-frontend
 
 jobs:
   backend:
@@ -60,3 +66,42 @@ jobs:
 
       - name: Build
         run: bun run build
+
+  push-images:
+    name: Build & Push Docker Images
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Login to ACR
+        run: az acr login --name siaconsulting
+
+      - name: Set image tag
+        id: tag
+        run: echo "tag=$(echo ${{ github.sha }} | cut -c1-7)" >> "$GITHUB_OUTPUT"
+
+      - name: Build & Push Backend Image
+        run: |
+          docker build -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.BACKEND_IMAGE }}:${{ steps.tag.outputs.tag }} \
+                        -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.BACKEND_IMAGE }}:latest \
+                        -f src/DevConfTicketing.Api/Dockerfile src/
+          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.BACKEND_IMAGE }}:${{ steps.tag.outputs.tag }}
+          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.BACKEND_IMAGE }}:latest
+
+      - name: Build & Push Frontend Image
+        run: |
+          docker build -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.FRONTEND_IMAGE }}:${{ steps.tag.outputs.tag }} \
+                        -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.FRONTEND_IMAGE }}:latest \
+                        -f frontend/Dockerfile frontend/
+          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.FRONTEND_IMAGE }}:${{ steps.tag.outputs.tag }}
+          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.FRONTEND_IMAGE }}:latest
