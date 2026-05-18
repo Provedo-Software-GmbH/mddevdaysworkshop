@@ -143,6 +143,14 @@ resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
               name: 'AzureAd__Audience'
               value: entraIdAudience
             }
+            {
+              name: 'Cors__AllowedOrigins__0'
+              value: !empty(frontendCustomDomain) ? 'https://${frontendCustomDomain}' : 'https://${frontendAppName}.${environment.properties.defaultDomain}'
+            }
+            {
+              name: 'Cors__AllowedOrigins__1'
+              value: 'https://${frontendAppName}.${environment.properties.defaultDomain}'
+            }
           ]
           probes: [
             {
