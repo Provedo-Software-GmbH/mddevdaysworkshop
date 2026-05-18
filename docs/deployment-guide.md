@@ -58,13 +58,23 @@ The deploy pipeline references `environment: production`.
 3. Name it `production`
 4. Optionally add deployment protection rules (required reviewers, wait timer, etc.)
 
-### 3. Grant Admin Consent ⬜
+### 3. Add SPA Redirect URIs ⬜
+
+In the Azure Portal:
+1. Go to **Entra ID → App registrations → DevConfTicketing-API**
+2. Under **Authentication**, click **Add a platform** → **Single-page application**
+3. Add these redirect URIs:
+   - `https://tickets.v2.devconf.nrw`
+   - `https://devconf-ticketing-frontend.whitetree-c05b1258.westeurope.azurecontainerapps.io`
+   - `http://localhost:5173` (for local development)
+
+### 4. Grant Admin Consent ⬜
 
 In the Azure Portal:
 1. Go to **Entra ID → App registrations → DevConfTicketing-API**
 2. Under **API permissions**, click **Grant admin consent for [your tenant]**
 
-### 4. Merge PR to `main` ⬜
+### 5. Merge PR to `main` ⬜
 
 Once the above is done:
 1. Merge this PR to `main`
