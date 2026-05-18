@@ -42,38 +42,62 @@ Write-Host "Setting identifier URI: $ApiIdentifierUri"
 az ad app update --id $AppId --identifier-uris $ApiIdentifierUri 2>&1 | Out-Null
 
 # Define app roles (Admin and EventManager)
+# NOTE: PowerShell mangles JSON strings passed to external commands.
+#       We write JSON to temp files and use az cli's @file syntax.
 Write-Host 'Configuring app roles...'
 $AdminRoleId = [guid]::NewGuid().ToString()
 $EventManagerRoleId = [guid]::NewGuid().ToString()
 
-$AppRoles = @"
-[
-  {
-    "allowedMemberTypes": ["User"],
-    "description": "Full admin access to all DevConf Ticketing features",
-    "displayName": "Admin",
-    "isEnabled": true,
-    "value": "Admin",
-    "id": "$AdminRoleId"
-  },
-  {
-    "allowedMemberTypes": ["User"],
-    "description": "Can manage events, ticket types, and view orders",
-    "displayName": "EventManager",
-    "isEnabled": true,
-    "value": "EventManager",
-    "id": "$EventManagerRoleId"
-  }
-]
-"@
+$AppRoles = @(
+    @{
+        allowedMemberTypes = @('User')
+        description        = 'Full admin access to all DevConf Ticketing features'
+        displayName        = 'Admin'
+        isEnabled          = $true
+        value              = 'Admin'
+        id                 = $AdminRoleId
+    },
+    @{
+        allowedMemberTypes = @('User')
+        description        = 'Can manage events, ticket types, and view orders'
+        displayName        = 'EventManager'
+        isEnabled          = $true
+        value              = 'EventManager'
+        id                 = $EventManagerRoleId
+    }
+)
 
-az ad app update --id $AppId --app-roles $AppRoles
+$AppRolesFile = [System.IO.Path]::GetTempFileName()
+$AppRoles | ConvertTo-Json -Depth 3 | Set-Content -Path $AppRolesFile -Encoding utf8
+az ad app update --id $AppId --app-roles "@$AppRolesFile"
+Remove-Item $AppRolesFile
 
 # Define API scope
 Write-Host 'Configuring API scope...'
 $ScopeId = [guid]::NewGuid().ToString()
-$ApiBody = "api={""oauth2PermissionScopes"":[{""adminConsentDescription"":""Access DevConf Ticketing API as admin"",""adminConsentDisplayName"":""Access DevConf Ticketing API"",""id"":""$ScopeId"",""isEnabled"":true,""type"":""Admin"",""value"":""access_as_admin""}]}"
-az ad app update --id $AppId --set $ApiBody
+
+$ApiPayload = @{
+    api = @{
+        oauth2PermissionScopes = @(
+            @{
+                adminConsentDescription = 'Access DevConf Ticketing API as admin'
+                adminConsentDisplayName = 'Access DevConf Ticketing API'
+                id                      = $ScopeId
+                isEnabled               = $true
+                type                    = 'Admin'
+                value                   = 'access_as_admin'
+            }
+        )
+    }
+}
+
+$ApiPayloadFile = [System.IO.Path]::GetTempFileName()
+$ApiPayload | ConvertTo-Json -Depth 4 | Set-Content -Path $ApiPayloadFile -Encoding utf8
+az rest --method PATCH `
+    --uri "https://graph.microsoft.com/v1.0/applications(appId='$AppId')" `
+    --headers 'Content-Type=application/json' `
+    --body "@$ApiPayloadFile"
+Remove-Item $ApiPayloadFile
 
 # Add User.Read delegated permission (Microsoft Graph)
 Write-Host 'Adding Microsoft Graph User.Read permission...'
