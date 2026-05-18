@@ -42,11 +42,12 @@ builder.Services.AddScoped<TaxCalculationService>();
 builder.Services.AddScoped<VoucherValidationService>();
 
 // CORS — allow traceparent header for end-to-end distributed tracing with the frontend
+var corsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins([.. corsOrigins, "http://localhost:5173"])
               .AllowAnyMethod()
               .AllowAnyHeader()
               .WithExposedHeaders("X-Correlation-ID")
