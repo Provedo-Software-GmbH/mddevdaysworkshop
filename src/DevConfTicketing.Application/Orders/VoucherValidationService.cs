@@ -33,6 +33,51 @@ public class VoucherValidationService(IVoucherRepository repository, ITelemetryS
         }
     }
 
+    public async Task<VoucherValidationResult> ValidateAsync(string eventId, string code, List<string>? ticketTypeIds, CancellationToken cancellationToken = default)
+    {
+        using var span = telemetry.StartSpan($"{nameof(VoucherValidationService)}.ValidateForApi");
+        try
+        {
+            var voucher = await repository.GetByCodeAsync(eventId, code, cancellationToken);
+            if (voucher is null)
+            {
+                return VoucherValidationResult.Invalid($"Voucher with code '{code}' not found.");
+            }
+
+            if (!voucher.IsActive)
+            {
+                return VoucherValidationResult.Invalid($"Voucher '{code}' is not active.");
+            }
+
+            if (voucher.ValidUntil.HasValue && voucher.ValidUntil.Value < DateTimeOffset.UtcNow)
+            {
+                return VoucherValidationResult.Invalid($"Voucher '{code}' has expired.");
+            }
+
+            if (voucher.UsedCount >= voucher.MaxUsages)
+            {
+                return VoucherValidationResult.Invalid($"Voucher '{code}' has reached its maximum usage limit.");
+            }
+
+            if (ticketTypeIds is { Count: > 0 } && voucher.ApplicableTicketTypeIds is { Count: > 0 })
+            {
+                var hasApplicable = ticketTypeIds.Any(id => voucher.ApplicableTicketTypeIds.Contains(id));
+                if (!hasApplicable)
+                {
+                    return VoucherValidationResult.Invalid($"Voucher '{code}' is not applicable to the selected ticket types.");
+                }
+            }
+
+            telemetry.IncrementCounter("voucher.validated");
+            return VoucherValidationResult.Valid(voucher.DiscountType, voucher.DiscountValue);
+        }
+        catch (Exception ex)
+        {
+            telemetry.TrackException(ex);
+            return VoucherValidationResult.Invalid("An error occurred during voucher validation.");
+        }
+    }
+
     public decimal CalculateDiscount(Voucher voucher, decimal originalGross) =>
         voucher.DiscountType switch
         {
@@ -41,4 +86,13 @@ public class VoucherValidationService(IVoucherRepository repository, ITelemetryS
             DiscountType.FixedPrice => Math.Max(0, originalGross - voucher.DiscountValue),
             _ => 0m
         };
+}
+
+public record VoucherValidationResult(bool IsValid, DiscountType? DiscountType, decimal? DiscountValue, string? ErrorMessage)
+{
+    public static VoucherValidationResult Valid(DiscountType discountType, decimal discountValue) =>
+        new(true, discountType, discountValue, null);
+
+    public static VoucherValidationResult Invalid(string errorMessage) =>
+        new(false, null, null, errorMessage);
 }
