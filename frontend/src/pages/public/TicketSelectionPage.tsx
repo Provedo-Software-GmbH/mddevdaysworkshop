@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { Link, useParams, useLocation } from "react-router-dom";
+import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
 import { format, parseISO } from "date-fns";
-import { ArrowLeft, Minus, Plus, ShoppingCart, Ticket, Info } from "lucide-react";
+import { ArrowLeft, Minus, Plus, ShoppingCart, Ticket, Info, Loader2 } from "lucide-react";
 
 import type { TicketType, LineItemTemplate } from "@/types/event";
 import { useEvent } from "@/hooks/useEvents";
 import { useTicketTypes } from "@/hooks/useTicketTypes";
+import { useCreateOrder } from "@/hooks/useCreateOrder";
 import { trackPageView } from "@/lib/telemetry";
 
 import { Button } from "@/components/ui/button";
@@ -44,8 +45,10 @@ function maxSelectable(tt: TicketType): number {
 export default function TicketSelectionPage() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
+  const navigate = useNavigate();
   const { data: event, isLoading: eventLoading, error: eventError } = useEvent(id);
   const { data: ticketTypes, isLoading: typesLoading, error: typesError } = useTicketTypes(id);
+  const createOrder = useCreateOrder();
 
   const [selections, setSelections] = useState<Record<string, number>>({});
 
@@ -72,6 +75,24 @@ export default function TicketSelectionPage() {
     () => selectedTypes.reduce((sum, tt) => sum + tt.price * tt.quantity, 0),
     [selectedTypes],
   );
+
+  const handleProceedToCheckout = useCallback(() => {
+    if (!id || selectedTypes.length === 0) return;
+
+    const positions = selectedTypes.map((tt) => ({
+      ticketTypeId: tt.id,
+      quantity: tt.quantity,
+    }));
+
+    createOrder.mutate(
+      { eventId: id, request: { customerEmail: "", positions } },
+      {
+        onSuccess: (order) => {
+          navigate(`/checkout?eventId=${id}&orderId=${order.id}`);
+        },
+      },
+    );
+  }, [id, selectedTypes, createOrder, navigate]);
 
   const isLoading = eventLoading || typesLoading;
   const error = eventError ?? typesError;
@@ -299,9 +320,22 @@ export default function TicketSelectionPage() {
                   )}
                 </CardContent>
                 <CardFooter>
-                  <Button className="w-full" disabled={selectedTypes.length === 0}>
-                    <ShoppingCart className="mr-2 h-4 w-4" />
-                    Proceed to Checkout
+                  <Button
+                    className="w-full"
+                    disabled={selectedTypes.length === 0 || createOrder.isPending}
+                    onClick={handleProceedToCheckout}
+                  >
+                    {createOrder.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating order...
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart className="mr-2 h-4 w-4" />
+                        Proceed to Checkout
+                      </>
+                    )}
                   </Button>
                 </CardFooter>
               </Card>

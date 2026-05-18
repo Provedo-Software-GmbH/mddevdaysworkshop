@@ -72,6 +72,16 @@ export interface OrderPosition {
   checkedInAt: string | null;
 }
 
+export interface CreateOrderPosition {
+  ticketTypeId: string;
+  quantity: number;
+}
+
+export interface CreateOrderRequest {
+  customerEmail: string;
+  positions: CreateOrderPosition[];
+}
+
 export interface Order {
   id: string;
   orderCode: string;
