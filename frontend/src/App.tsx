@@ -9,6 +9,7 @@ import AdminLayout from "@/layouts/AdminLayout";
 import HomePage from "@/pages/public/HomePage";
 import EventDetailPage from "@/pages/public/EventDetailPage";
 import TicketSelectionPage from "@/pages/public/TicketSelectionPage";
+import CheckoutPage from "@/pages/public/CheckoutPage";
 import AdminDashboardPage from "@/pages/admin/AdminDashboardPage";
 import EventsPage from "@/pages/admin/EventsPage";
 import CreateEventPage from "@/pages/admin/CreateEventPage";
@@ -41,6 +42,7 @@ export default function App() {
                   <Route index element={<HomePage />} />
                   <Route path="events/:id" element={<EventDetailPage />} />
                   <Route path="events/:id/tickets" element={<TicketSelectionPage />} />
+                  <Route path="checkout" element={<CheckoutPage />} />
                 </Route>
 
                 {/* Admin routes — protected by auth */}

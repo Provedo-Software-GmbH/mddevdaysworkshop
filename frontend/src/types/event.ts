@@ -52,6 +52,16 @@ export interface TaxRate {
 
 export type OrderStatus = "Pending" | "PaymentProcessing" | "Paid" | "Cancelled" | "Refunded";
 
+export interface CheckoutRequest {
+  successUrl: string;
+  cancelUrl: string;
+}
+
+export interface CheckoutResponse {
+  sessionId: string;
+  sessionUrl: string;
+}
+
 export interface OrderPosition {
   ticketTypeId: string;
   ticketTypeName: string;
