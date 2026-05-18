@@ -5,6 +5,7 @@ using DevConfTicketing.Application.Interfaces;
 using DevConfTicketing.Infrastructure.Cosmos;
 using DevConfTicketing.Infrastructure.Cosmos.Repositories;
 using DevConfTicketing.Infrastructure.Monitoring;
+using DevConfTicketing.Infrastructure.Stripe;
 
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
@@ -61,6 +62,10 @@ public static class InfrastructureServiceRegistration
         services.AddSingleton<ITaxRateRepository, TaxRateRepository>();
         services.AddSingleton<IOrderRepository, OrderRepository>();
         services.AddSingleton<IVoucherRepository, VoucherRepository>();
+
+        // Stripe payment service
+        services.Configure<StripeOptions>(configuration.GetSection(StripeOptions.SectionName));
+        services.AddSingleton<IPaymentService, StripePaymentService>();
 
         // OpenTelemetry with Azure Monitor exporter
         // Uses System.Diagnostics.Activity for distributed tracing and System.Diagnostics.Metrics for metrics.

@@ -16,6 +16,9 @@
     <PackageVersion Include="Azure.Identity" Version="1.21.0" />
     <PackageVersion Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.5.0" />
 
+    <!-- Stripe -->
+    <PackageVersion Include="Stripe.net" Version="51.1.0" />
+
     <!-- Testing -->
     <PackageVersion Include="coverlet.collector" Version="10.0.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
