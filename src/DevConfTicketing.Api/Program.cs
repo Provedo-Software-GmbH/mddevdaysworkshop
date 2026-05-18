@@ -56,10 +56,14 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Initialize Cosmos DB containers in development
+// Initialize Cosmos DB containers and seed data in development
 if (app.Environment.IsDevelopment())
 {
     await app.Services.InitializeCosmosDbAsync();
+
+    using var scope = app.Services.CreateScope();
+    var seedDataService = scope.ServiceProvider.GetRequiredService<SeedDataService>();
+    await seedDataService.SeedAsync();
 }
 
 // Middleware pipeline (order matters)
