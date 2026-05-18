@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.ComponentModel;
 using DevConfTicketing.Application.Interfaces;
 using DevConfTicketing.Domain.Vouchers;
 
@@ -88,6 +89,7 @@ public class VoucherValidationService(IVoucherRepository repository, ITelemetryS
         };
 }
 
+[Description("Result of voucher validation containing validity status and discount information")]
 public record VoucherValidationResult(bool IsValid, DiscountType? DiscountType, decimal? DiscountValue, string? ErrorMessage)
 {
     public static VoucherValidationResult Valid(DiscountType discountType, decimal discountValue) =>

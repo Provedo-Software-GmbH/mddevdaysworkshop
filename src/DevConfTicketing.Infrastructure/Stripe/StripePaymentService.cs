@@ -17,6 +17,7 @@ public class StripePaymentService(
     ILogger<StripePaymentService> logger) : IPaymentService
 {
     private readonly StripeOptions _options = options.Value;
+    private readonly StripeClient _client = new(options.Value.SecretKey);
 
     public async Task<CheckoutSessionResult> CreateCheckoutSessionAsync(Order order, string successUrl, string cancelUrl, CancellationToken cancellationToken = default)
     {
@@ -26,14 +27,12 @@ public class StripePaymentService(
 
         try
         {
-            var client = new StripeClient(_options.SecretKey);
-
             var lineItems = order.Positions.Select(position => new SessionLineItemOptions
             {
                 PriceData = new SessionLineItemPriceDataOptions
                 {
                     Currency = _options.Currency,
-                    UnitAmountDecimal = position.PositionGross * 100, // Stripe expects amounts in cents
+                    UnitAmountDecimal = Math.Round(position.PositionGross * 100, 0, MidpointRounding.AwayFromZero),
                     ProductData = new SessionLineItemPriceDataProductDataOptions
                     {
                         Name = position.TicketTypeName,
@@ -59,7 +58,7 @@ public class StripePaymentService(
                 }
             };
 
-            var service = new SessionService(client);
+            var service = new SessionService(_client);
             var session = await service.CreateAsync(sessionOptions, cancellationToken: cancellationToken);
 
             telemetry.IncrementCounter("stripe.checkout_session.created");
@@ -87,8 +86,7 @@ public class StripePaymentService(
                 return new PaymentStatusResult("no_payment", null, null);
             }
 
-            var client = new StripeClient(_options.SecretKey);
-            var service = new SessionService(client);
+            var service = new SessionService(_client);
             var session = await service.GetAsync(order.PaymentInfo.StripeSessionId, cancellationToken: cancellationToken);
 
             var status = session.PaymentStatus switch
@@ -124,8 +122,7 @@ public class StripePaymentService(
                 throw new InvalidOperationException($"Order {order.Id} has no Payment Intent ID — cannot refund.");
             }
 
-            var client = new StripeClient(_options.SecretKey);
-            var service = new RefundService(client);
+            var service = new RefundService(_client);
 
             var refundOptions = new RefundCreateOptions
             {
