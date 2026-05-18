@@ -115,10 +115,10 @@ All models annotated with `[Description]` and `[JsonPropertyName]` attributes.
 - [x] Skill: `german-tax-calculation.md`
 - [x] Skill: `accessibility-checker.md`
 
-### Step 13: GitHub Issues for Attendees
-- [ ] Create 6 detailed GitHub Issues (one per attendee task)
-- [ ] Add labels: `workshop-task`, `attendee-1` through `attendee-6`
-- [ ] Add acceptance criteria as task lists
+### Step 13: GitHub Issues for Attendees ✅
+- [x] Create 6 detailed GitHub Issues (one per attendee task)
+- [ ] Add labels: `workshop-task`, `attendee-1` through `attendee-6` *(requires manual label creation — token lacked permission)*
+- [x] Add acceptance criteria as task lists
 
 ### Step 14: Documentation
 - [ ] README.md update with setup instructions
