@@ -45,7 +45,7 @@ az ad app update --id "${APP_ID}" \
       "displayName": "Admin",
       "isEnabled": true,
       "value": "Admin",
-      "id": "'"$(cat /proc/sys/kernel/random/uuid)"'"
+      "id": "'"$(uuidgen || cat /proc/sys/kernel/random/uuid)"'"
     },
     {
       "allowedMemberTypes": ["User"],
@@ -53,13 +53,13 @@ az ad app update --id "${APP_ID}" \
       "displayName": "EventManager",
       "isEnabled": true,
       "value": "EventManager",
-      "id": "'"$(cat /proc/sys/kernel/random/uuid)"'"
+      "id": "'"$(uuidgen || cat /proc/sys/kernel/random/uuid)"'"
     }
   ]'
 
 # Define API scope
 echo "Configuring API scope..."
-SCOPE_ID=$(cat /proc/sys/kernel/random/uuid)
+SCOPE_ID=$(uuidgen || cat /proc/sys/kernel/random/uuid)
 az ad app update --id "${APP_ID}" \
   --set "api={\"oauth2PermissionScopes\":[{\"adminConsentDescription\":\"Access DevConf Ticketing API as admin\",\"adminConsentDisplayName\":\"Access DevConf Ticketing API\",\"id\":\"${SCOPE_ID}\",\"isEnabled\":true,\"type\":\"Admin\",\"value\":\"access_as_admin\"}]}"
 

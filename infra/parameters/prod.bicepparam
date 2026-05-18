@@ -14,6 +14,7 @@ param appInsightsName = 'devconf-ticketing-insights'
 param backendAppName = 'devconf-ticketing-api'
 param frontendAppName = 'devconf-ticketing-frontend'
 param imageTag = 'latest'
+// These must be overridden at deployment time via pipeline secrets
 param entraIdTenantId = ''
 param entraIdClientId = ''
 param entraIdAudience = 'api://devconf-ticketing'
