@@ -129,7 +129,7 @@ resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
             }
             {
               name: 'AzureAd__Instance'
-              value: '${az.environment().authentication.loginEndpoint}/'
+              value: az.environment().authentication.loginEndpoint
             }
             {
               name: 'AzureAd__TenantId'

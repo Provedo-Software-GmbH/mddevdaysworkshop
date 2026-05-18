@@ -101,6 +101,9 @@ jobs:
       - name: Build & Push Frontend Image
         run: |
           docker build --build-arg VITE_API_URL=https://tickets.v2.api.devconf.nrw/api/v1 \
+                        --build-arg VITE_AZURE_AD_CLIENT_ID=${{ secrets.FRONTEND_AZURE_AD_CLIENT_ID }} \
+                        --build-arg VITE_AZURE_AD_TENANT_ID=${{ secrets.AZURE_TENANT_ID }} \
+                        --build-arg VITE_AZURE_AD_API_SCOPE=${{ secrets.FRONTEND_AZURE_AD_API_SCOPE }} \
                         -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.FRONTEND_IMAGE }}:${{ steps.tag.outputs.tag }} \
                         -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.FRONTEND_IMAGE }}:latest \
                         -f frontend/Dockerfile frontend/
