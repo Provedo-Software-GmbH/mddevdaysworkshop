@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
 
 concurrency:
@@ -20,9 +20,45 @@ env:
   FRONTEND_IMAGE: devconf-ticketing-frontend
 
 jobs:
+  version:
+    name: Determine Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Calculate version from latest tag
+        id: version
+        run: |
+          # Get the latest semver tag (e.g. v1.2.3), default to v0.0.0 if none
+          LATEST_TAG=$(git tag -l 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n 1)
+          if [ -z "$LATEST_TAG" ]; then
+            LATEST_TAG="v0.0.0"
+          fi
+          echo "Latest tag: $LATEST_TAG"
+
+          # Strip the 'v' prefix and split into major.minor.patch
+          VERSION="${LATEST_TAG#v}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+
+          # Increment patch for the new version
+          NEW_PATCH=$((PATCH + 1))
+          NEW_VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}"
+          NEW_TAG="v${NEW_VERSION}"
+
+          echo "New version: $NEW_VERSION"
+          echo "New tag: $NEW_TAG"
+          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$NEW_TAG" >> "$GITHUB_OUTPUT"
+
   backend:
     name: Backend Build & Test
     runs-on: ubuntu-latest
+    needs: [version]
     defaults:
       run:
         working-directory: src
@@ -40,7 +76,7 @@ jobs:
         run: dotnet restore
 
       - name: Build
-        run: dotnet build --no-restore -c Release
+        run: dotnet build --no-restore -c Release /p:Version=${{ needs.version.outputs.version }}
 
       - name: Test
         run: dotnet test --no-build -c Release --verbosity normal
@@ -48,6 +84,7 @@ jobs:
   frontend:
     name: Frontend Build & Lint
     runs-on: ubuntu-latest
+    needs: [version]
     defaults:
       run:
         working-directory: frontend
@@ -61,16 +98,23 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Set version in package.json
+        run: |
+          VERSION="${{ needs.version.outputs.version }}"
+          jq --arg v "$VERSION" '.version = $v' package.json > package.json.tmp && mv package.json.tmp package.json
+
       - name: Lint
         run: bun run lint
 
       - name: Build
         run: bun run build
+        env:
+          VITE_APP_VERSION: ${{ needs.version.outputs.version }}
 
   push-images:
     name: Build & Push Docker Images
     runs-on: ubuntu-latest
-    needs: [backend, frontend]
+    needs: [version, backend, frontend]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
@@ -86,16 +130,13 @@ jobs:
       - name: Login to ACR
         run: az acr login --name siaconsulting
 
-      - name: Set image tag
-        id: tag
-        run: echo "tag=$(echo ${{ github.sha }} | cut -c1-7)" >> "$GITHUB_OUTPUT"
-
       - name: Build & Push Backend Image
         run: |
-          docker build -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.BACKEND_IMAGE }}:${{ steps.tag.outputs.tag }} \
+          docker build --build-arg VERSION=${{ needs.version.outputs.version }} \
+                        -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.BACKEND_IMAGE }}:${{ needs.version.outputs.version }} \
                         -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.BACKEND_IMAGE }}:latest \
                         -f src/DevConfTicketing.Api/Dockerfile src/
-          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.BACKEND_IMAGE }}:${{ steps.tag.outputs.tag }}
+          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.BACKEND_IMAGE }}:${{ needs.version.outputs.version }}
           docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.BACKEND_IMAGE }}:latest
 
       - name: Build & Push Frontend Image
@@ -104,8 +145,25 @@ jobs:
                         --build-arg VITE_AZURE_AD_CLIENT_ID=${{ secrets.ENTRA_ID_CLIENT_ID }} \
                         --build-arg VITE_AZURE_AD_TENANT_ID=${{ secrets.AZURE_TENANT_ID }} \
                         --build-arg VITE_AZURE_AD_API_SCOPE=api://devconf-ticketing/access_as_admin \
-                        -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.FRONTEND_IMAGE }}:${{ steps.tag.outputs.tag }} \
+                        --build-arg VITE_APP_VERSION=${{ needs.version.outputs.version }} \
+                        -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.FRONTEND_IMAGE }}:${{ needs.version.outputs.version }} \
                         -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.FRONTEND_IMAGE }}:latest \
                         -f frontend/Dockerfile frontend/
-          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.FRONTEND_IMAGE }}:${{ steps.tag.outputs.tag }}
+          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.FRONTEND_IMAGE }}:${{ needs.version.outputs.version }}
           docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.FRONTEND_IMAGE }}:latest
+
+  tag:
+    name: Create Git Tag
+    runs-on: ubuntu-latest
+    needs: [version, push-images]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Create and push tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ needs.version.outputs.tag }}" -m "Release ${{ needs.version.outputs.tag }}"
+          git push origin "${{ needs.version.outputs.tag }}"
