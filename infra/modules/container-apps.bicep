@@ -46,8 +46,22 @@ param entraIdClientId string
 @description('The Entra ID audience for the backend API')
 param entraIdAudience string
 
+@description('The custom domain name for the backend app (e.g., tickets.v2.api.devconf.nrw)')
+param backendCustomDomain string = ''
+
+@description('The custom domain name for the frontend app (e.g., tickets.v2.devconf.nrw)')
+param frontendCustomDomain string = ''
+
+@description('The name of the certificate in the Container Apps Environment for the custom domains')
+param customDomainCertificateName string = ''
+
 resource environment 'Microsoft.App/managedEnvironments@2024-03-01' existing = {
   name: environmentName
+}
+
+resource certificate 'Microsoft.App/managedEnvironments/certificates@2024-03-01' existing = if (!empty(customDomainCertificateName)) {
+  parent: environment
+  name: customDomainCertificateName
 }
 
 resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
@@ -68,6 +82,13 @@ resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
         targetPort: 5000
         transport: 'http'
         allowInsecure: false
+        customDomains: !empty(backendCustomDomain) && !empty(customDomainCertificateName) ? [
+          {
+            name: backendCustomDomain
+            certificateId: certificate.id
+            bindingType: 'SniEnabled'
+          }
+        ] : []
       }
       registries: [
         {
@@ -181,6 +202,13 @@ resource frontendApp 'Microsoft.App/containerApps@2024-03-01' = {
         targetPort: 80
         transport: 'http'
         allowInsecure: false
+        customDomains: !empty(frontendCustomDomain) && !empty(customDomainCertificateName) ? [
+          {
+            name: frontendCustomDomain
+            certificateId: certificate.id
+            bindingType: 'SniEnabled'
+          }
+        ] : []
       }
       registries: [
         {

@@ -19,11 +19,14 @@ The following resources were deployed on **2026-05-18**:
 
 | Resource | URL / Endpoint |
 | -------- | -------------- |
-| **Backend API** | `https://devconf-ticketing-api.whitetree-c05b1258.westeurope.azurecontainerapps.io` |
-| **Frontend** | `https://devconf-ticketing-frontend.whitetree-c05b1258.westeurope.azurecontainerapps.io` |
+| **Backend API** | `https://tickets.v2.api.devconf.nrw` |
+| **Frontend** | `https://tickets.v2.devconf.nrw` |
+| **Backend API** (default) | `https://devconf-ticketing-api.whitetree-c05b1258.westeurope.azurecontainerapps.io` |
+| **Frontend** (default) | `https://devconf-ticketing-frontend.whitetree-c05b1258.westeurope.azurecontainerapps.io` |
 | **Cosmos DB** | `https://devconf-ticketing-db.documents.azure.com:443/` |
 
 > Both container apps scale to zero when idle — first request after idle may take a few seconds.
+> Custom domains use the `devconf-nrw-wildcard` certificate uploaded to the Container Apps Environment.
 
 ## Remaining Manual Steps (for you)
 
