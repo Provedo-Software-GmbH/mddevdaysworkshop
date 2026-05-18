@@ -103,7 +103,9 @@ Implementiere die komplette Zahlungsabwicklung mit Stripe inkl. Stornierung und 
 
 ### Umsetzungsplan mit Parallelisierung für Aufgabe 1 (Stripe Payment, Refunds & Cancellations):
 
-### Kickoff & Contract-Freeze (seriell, 1 Agent) Scope final festlegen (Checkout, Webhooks, Cancel/Refund, Voucher, Admin-Storno) API-Verträge fixieren: POST /orders/{id}/checkout POST /webhooks/stripe GET /orders/{id}/payment-status POST /orders/{id}/cancel POST /orders/{id}/refund POST /vouchers/validate Domain-Änderungen finalisieren (PaymentInfo, CancellationDate, Status-Transitions, Idempotenz-Eventspeicher) Done-Definition + Akzeptanzkriterien als gemeinsame Checkliste
+
+### Kickoff & Contract-Freeze (seriell, 1 Agent) 
+Scope final festlegen (Checkout, Webhooks, Cancel/Refund, Voucher, Admin-Storno) API-Verträge fixieren: POST /orders/{id}/checkout POST /webhooks/stripe GET /orders/{id}/payment-status POST /orders/{id}/cancel POST /orders/{id}/refund POST /vouchers/validate Domain-Änderungen finalisieren (PaymentInfo, CancellationDate, Status-Transitions, Idempotenz-Eventspeicher) Done-Definition + Akzeptanzkriterien als gemeinsame Checkliste
 
 ### Wave 1 – Kernimplementierung parallel starten 
 Stream A (backend-api-agent): Stripe Checkout Session + PaymentStatus Endpoint + Grundstruktur Stripe Service Stream B (backend-api-agent): Webhook-Handler (Signature Verify, checkout.session.completed|expired, Idempotenz) Stream C (frontend-component-agent): /checkout Seite (Order Summary, E-Mail, “Jetzt bezahlen”, Redirect-Flow) Stream D (frontend-component-agent): Ticket-Selector → Checkout-Flow verbinden Stream E (testing-agent): Testgerüst für PaymentService/Webhook-Idempotenz vorbereiten (Mocks, Testdaten, Szenarien)
