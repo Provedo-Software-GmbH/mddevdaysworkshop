@@ -71,6 +71,15 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
 // Modules
 // ──────────────────────────────────────────────
 
+module containerAppsEnvironment 'modules/container-apps-environment.bicep' = {
+  name: 'container-apps-env-${environmentName}'
+  params: {
+    environmentName: containerAppsEnvironmentName
+    location: location
+    logAnalyticsWorkspaceName: logAnalyticsWorkspaceName
+  }
+}
+
 module cosmosDb 'modules/cosmos-db.bicep' = {
   name: 'cosmos-db-${environmentName}'
   params: {
@@ -126,6 +135,7 @@ module containerApps 'modules/container-apps.bicep' = {
     entraIdAudience: entraIdAudience
   }
   dependsOn: [
+    containerAppsEnvironment
     keyVaultSecrets
     acrRoleAssignment
   ]
