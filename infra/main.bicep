@@ -13,6 +13,9 @@ param location string = resourceGroup().location
 @description('The name of the existing Container Apps Environment')
 param containerAppsEnvironmentName string
 
+@description('The location of the Container Apps Environment (may differ from resource group location)')
+param containerAppsLocation string = 'westeurope'
+
 @description('The name of the existing user-assigned managed identity')
 param managedIdentityName string
 
@@ -112,6 +115,7 @@ module containerApps 'modules/container-apps.bicep' = {
   name: 'container-apps-${environmentName}'
   params: {
     environmentName: containerAppsEnvironmentName
+    containerAppsLocation: containerAppsLocation
     backendAppName: backendAppName
     frontendAppName: frontendAppName
     acrLoginServer: acrLoginServer
