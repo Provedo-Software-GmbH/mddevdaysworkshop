@@ -35,7 +35,7 @@ public class VoucherValidationService(IVoucherRepository repository, ITelemetryS
 
     public async Task<VoucherValidationResult> ValidateAsync(string eventId, string code, List<string>? ticketTypeIds, CancellationToken cancellationToken = default)
     {
-        using var span = telemetry.StartSpan($"{nameof(VoucherValidationService)}.ValidateForApi");
+        using var span = telemetry.StartSpan($"{nameof(VoucherValidationService)}.ValidateWithResult");
         try
         {
             var voucher = await repository.GetByCodeAsync(eventId, code, cancellationToken);
