@@ -104,7 +104,6 @@ module acrRoleAssignment 'modules/acr-role-assignment.bicep' = {
   scope: resourceGroup(acrResourceGroup)
   params: {
     acrName: acrName
-    acrResourceGroup: acrResourceGroup
     managedIdentityPrincipalId: managedIdentity.properties.principalId
   }
 }
@@ -113,6 +112,7 @@ module containerApps 'modules/container-apps.bicep' = {
   name: 'container-apps-${environmentName}'
   params: {
     environmentName: containerAppsEnvironmentName
+    location: location
     backendAppName: backendAppName
     frontendAppName: frontendAppName
     acrLoginServer: acrLoginServer
