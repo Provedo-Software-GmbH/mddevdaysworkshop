@@ -93,15 +93,15 @@ All models annotated with `[Description]` and `[JsonPropertyName]` attributes.
 - [x] CurrencyDisplay, TaxBreakdown
 - [x] LoadingSpinner, ErrorBoundary (with `trackError` telemetry), EmptyState, ConfirmDialog
 
-### Step 10: Tests (Examples)
-- [ ] Event creation validation tests
-- [ ] Tax calculation tests (19%, 7%, 0%)
-- [ ] Order total calculation tests
-- [ ] Frontend: Vitest config + example component test
+### Step 10: Tests (Examples) ✅
+- [x] Event creation validation tests
+- [x] Tax calculation tests (19%, 7%, 0%)
+- [x] Order total calculation tests
+- [x] Frontend: Vitest config + example component test
 
-### Step 11: Seed Data
-- [ ] Development seed data (events, tax rates, ticket types)
-- [ ] Loaded on startup when in Development environment
+### Step 11: Seed Data ✅
+- [x] Development seed data (events, tax rates, ticket types)
+- [x] Loaded on startup when in Development environment
 
 ### Step 12: Custom Agents & Skills
 - [ ] `backend-api-agent.md`
