@@ -95,5 +95,8 @@ app.MapGroup("/api/v1/events").MapEventEndpoints();
 app.MapGroup("/api/v1/events/{eventId}/ticket-types").MapTicketTypeEndpoints();
 app.MapGroup("/api/v1/tax-rates").MapTaxRateEndpoints();
 app.MapGroup("/api/v1/events/{eventId}/orders").MapOrderEndpoints();
+app.MapGroup("/api/v1/events/{eventId}/orders").MapPaymentEndpoints();
+app.MapWebhookEndpoints();
+app.MapVoucherEndpoints();
 
 app.Run();

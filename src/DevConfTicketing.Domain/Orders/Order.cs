@@ -73,4 +73,8 @@ public class Order
     [Description("Timestamp when the order was cancelled")]
     [JsonPropertyName("cancellationDate")]
     public DateTimeOffset? CancellationDate { get; set; }
+
+    [Description("Stripe payment information associated with this order")]
+    [JsonPropertyName("paymentInfo")]
+    public PaymentInfo? PaymentInfo { get; set; }
 }
