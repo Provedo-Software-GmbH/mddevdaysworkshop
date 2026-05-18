@@ -236,6 +236,54 @@ steps:
     run: bunx playwright install --with-deps chromium
 ```
 
+## FAQ: `copilot-instructions.md`, Agents & Skills
+
+### Do we need to update `copilot-instructions.md` to use agents and skills?
+
+**No — not for discovery.** Agents in `.github/agents/` and skills in `.github/copilot/skills/` are automatically discovered by the Copilot cloud agent. You do not need to reference them in `copilot-instructions.md` for them to work.
+
+**However**, it is a good practice to add a brief section to the root `copilot-instructions.md` that tells Copilot *when* to delegate to specific agents. For example:
+
+> "For new API endpoints, delegate to `backend-api-agent`. For new React components, delegate to `frontend-component-agent`. Always run `testing-agent` after implementing a feature."
+
+This gives the cloud agent **routing guidance** so it knows which agent to invoke for which type of task, even though it can already see all agents.
+
+### Should we have multiple `copilot-instructions.md` for frontend and backend?
+
+**Yes — this is supported and recommended for this project.** GitHub Copilot supports **one `copilot-instructions.md` per directory**, and the **nearest file in the directory tree takes precedence** (deepest wins). So the recommended structure is:
+
+```
+.github/copilot-instructions.md      ← global (project-wide conventions, agent routing)
+src/copilot-instructions.md           ← backend-specific (.NET, C#, API patterns)
+frontend/copilot-instructions.md      ← frontend-specific (React, TypeScript, Tailwind)
+```
+
+This way:
+
+- The **root instructions** (`.github/copilot-instructions.md`) cover cross-cutting concerns: model annotations (`[Description]` + `[JsonPropertyName]`), code organization (one file per type), agent/skill routing, and shared conventions.
+- The **`src/copilot-instructions.md`** focuses on C# language features, .NET patterns, Cosmos DB repository conventions, telemetry via `System.Diagnostics.Activity`/`Metrics`, and backend-specific conventions. This is where most of the current root content should live.
+- The **`frontend/copilot-instructions.md`** focuses on React 19, TypeScript (strict, no `any`), Tailwind CSS, shadcn/ui, TanStack Query, Vitest + React Testing Library, and frontend telemetry via `lib/telemetry.ts`.
+
+**Why this matters**: The current root `copilot-instructions.md` is heavily C#-focused, which isn't helpful when the Copilot cloud agent is working on frontend files. Splitting the instructions ensures each part of the codebase gets relevant guidance.
+
+### Should we reference agents in the sub-instructions?
+
+**Yes, but only the relevant ones.** Each sub-level `copilot-instructions.md` should reference the agents that apply to that area:
+
+- `src/copilot-instructions.md` → reference `backend-api-agent`, `testing-agent`, `kpi-agent`
+- `frontend/copilot-instructions.md` → reference `frontend-component-agent`, `testing-agent`, `e2e-testing-agent`, `kpi-agent`
+
+This keeps routing scoped — when the agent is working in `frontend/`, it sees frontend-relevant agents; when working in `src/`, it sees backend-relevant agents.
+
+### Summary of recommended next steps
+
+1. **Slim down** `.github/copilot-instructions.md` to only global/cross-cutting concerns + agent routing
+2. **Create** `src/copilot-instructions.md` with backend-specific C# conventions (moved from root)
+3. **Create** `frontend/copilot-instructions.md` with frontend-specific React/TypeScript conventions
+4. Each sub-instruction file references only the agents relevant to that area
+
+---
+
 ## Agent & Skill Demonstration Plan (Workshop Intro)
 
 During the intro session, demonstrate:
