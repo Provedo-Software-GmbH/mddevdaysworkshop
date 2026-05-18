@@ -120,10 +120,10 @@ All models annotated with `[Description]` and `[JsonPropertyName]` attributes.
 - [ ] Add labels: `workshop-task`, `attendee-1` through `attendee-6` *(requires manual label creation — token lacked permission)*
 - [x] Add acceptance criteria as task lists
 
-### Step 14: Documentation
-- [ ] README.md update with setup instructions
-- [ ] CONTRIBUTING.md with development guide
-- [ ] Workshop guide for attendees
+### Step 14: Documentation ✅
+- [x] README.md update with setup instructions
+- [x] CONTRIBUTING.md with development guide
+- [x] Workshop guide for attendees
 
 ---
 
