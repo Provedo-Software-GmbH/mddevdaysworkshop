@@ -15,7 +15,7 @@ RUN dotnet restore DevConfTicketing.slnx
 # Copy everything and build
 COPY . .
 ARG VERSION=0.0.1
-RUN dotnet publish DevConfTicketing.Api/DevConfTicketing.Api.csproj -c Release -o /app/publish /p:Version=${VERSION}
+RUN dotnet publish DevConfTicketing.Api/DevConfTicketing.Api.csproj -c Release --no-restore -o /app/publish /p:Version=${VERSION}
 
 # Runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:11.0-preview AS runtime
