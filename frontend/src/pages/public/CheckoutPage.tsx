@@ -36,12 +36,18 @@ export default function CheckoutPage() {
   const { data: order, isLoading, error } = useOrder(eventId ?? undefined, orderId ?? undefined);
   const checkout = useCheckout();
 
-  const [email, setEmail] = useState(order?.customerEmail ?? "");
+  const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
 
   useEffect(() => {
     trackPageView("checkout", "/checkout");
   }, []);
+
+  useEffect(() => {
+    if (order?.customerEmail && !email) {
+      setEmail(order.customerEmail);
+    }
+  }, [order?.customerEmail]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function validateEmail(value: string): boolean {
     if (!value.trim()) {
