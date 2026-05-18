@@ -16,11 +16,7 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2024-12-01-preview
   kind: 'GlobalDocumentDB'
   properties: {
     databaseAccountOfferType: 'Standard'
-    capabilities: [
-      {
-        name: 'EnableServerless'
-      }
-    ]
+    capacityMode: 'Serverless'
     consistencyPolicy: {
       defaultConsistencyLevel: 'Session'
     }
