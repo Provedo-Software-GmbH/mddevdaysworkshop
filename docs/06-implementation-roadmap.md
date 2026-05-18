@@ -103,17 +103,17 @@ All models annotated with `[Description]` and `[JsonPropertyName]` attributes.
 - [x] Development seed data (events, tax rates, ticket types)
 - [x] Loaded on startup when in Development environment
 
-### Step 12: Custom Agents & Skills
-- [ ] `backend-api-agent.md`
-- [ ] `frontend-component-agent.md`
-- [ ] `testing-agent.md`
-- [ ] `e2e-testing-agent.md`
-- [ ] `kpi-agent.md`
-- [ ] Skill: `azure-log-analytics-scanner.md`
-- [ ] Skill: `cosmos-db-query-helper.md`
-- [ ] Skill: `stripe-integration-helper.md`
-- [ ] Skill: `german-tax-calculation.md`
-- [ ] Skill: `accessibility-checker.md`
+### Step 12: Custom Agents & Skills ✅
+- [x] `backend-api-agent.md`
+- [x] `frontend-component-agent.md`
+- [x] `testing-agent.md`
+- [x] `e2e-testing-agent.md`
+- [x] `kpi-agent.md`
+- [x] Skill: `azure-log-analytics-scanner.md`
+- [x] Skill: `cosmos-db-query-helper.md`
+- [x] Skill: `stripe-integration-helper.md`
+- [x] Skill: `german-tax-calculation.md`
+- [x] Skill: `accessibility-checker.md`
 
 ### Step 13: GitHub Issues for Attendees
 - [ ] Create 6 detailed GitHub Issues (one per attendee task)
