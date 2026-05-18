@@ -1,9 +1,6 @@
 @description('The name of the existing Container Apps Environment')
 param environmentName string
 
-@description('The location for resources')
-param location string = resourceGroup().location
-
 @description('The name of the backend Container App')
 param backendAppName string
 
@@ -52,7 +49,7 @@ resource environment 'Microsoft.App/managedEnvironments@2024-03-01' existing = {
 
 resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: backendAppName
-  location: location
+  location: environment.location
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
@@ -165,7 +162,7 @@ resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
 
 resource frontendApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: frontendAppName
-  location: location
+  location: environment.location
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
