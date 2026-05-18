@@ -37,7 +37,7 @@ When working on this project, delegate to specialized agents:
 - **Frontend components** (`frontend/`): delegate to `frontend-component-agent`
 - **Unit tests**: always run `testing-agent` after implementing a feature
 - **E2E tests** (frontend workflows): delegate to `e2e-testing-agent`
-- **KPI/metrics definition**: delegate to `kpi-agent`
+- **KPI/metrics definition**: **always** run `kpi-agent` after implementing a feature to define and implement KPIs
 
 ## Skills
 
