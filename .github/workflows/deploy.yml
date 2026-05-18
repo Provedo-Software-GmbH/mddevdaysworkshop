@@ -66,4 +66,7 @@ jobs:
             entraIdTenantId=${{ secrets.AZURE_TENANT_ID }}
             entraIdClientId=${{ secrets.ENTRA_ID_CLIENT_ID }}
             entraIdAudience=api://devconf-ticketing
+            backendCustomDomain=tickets.v2.api.devconf.nrw
+            frontendCustomDomain=tickets.v2.devconf.nrw
+            customDomainCertificateName=devconf-nrw-wildcard
           failOnStdErr: false

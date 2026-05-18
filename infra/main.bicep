@@ -58,6 +58,15 @@ param entraIdClientId string
 @description('The Entra ID audience for the backend API')
 param entraIdAudience string
 
+@description('The custom domain name for the backend app')
+param backendCustomDomain string = ''
+
+@description('The custom domain name for the frontend app')
+param frontendCustomDomain string = ''
+
+@description('The certificate name in the Container Apps Environment for the custom domains')
+param customDomainCertificateName string = ''
+
 // ──────────────────────────────────────────────
 // Existing resources
 // ──────────────────────────────────────────────
@@ -127,6 +136,9 @@ module containerApps 'modules/container-apps.bicep' = {
     entraIdTenantId: entraIdTenantId
     entraIdClientId: entraIdClientId
     entraIdAudience: entraIdAudience
+    backendCustomDomain: backendCustomDomain
+    frontendCustomDomain: frontendCustomDomain
+    customDomainCertificateName: customDomainCertificateName
   }
   dependsOn: [
     keyVaultSecrets
