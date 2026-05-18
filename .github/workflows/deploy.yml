@@ -51,6 +51,7 @@ jobs:
             environmentName=prod
             location=germanywestcentral
             containerAppsEnvironmentName=nrwdevconf-env
+            containerAppsLocation=westeurope
             managedIdentityName=nrwdevconf_mi
             keyVaultName=nrwdevconf
             logAnalyticsWorkspaceName=nrwdevconflogs
